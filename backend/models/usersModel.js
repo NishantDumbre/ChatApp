@@ -18,7 +18,7 @@ const Users = sequelize.define('users',{
         allowNull:false
     },
     phone:{
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         unique:true,
         allowNull:false
     },

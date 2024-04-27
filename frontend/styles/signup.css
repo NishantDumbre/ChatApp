@@ -1,43 +1,43 @@
-*{
-    margin:0px;
-    padding:0px;
-    
+* {
+    margin: 0px;
+    padding: 0px;
+
     font-family: Arial, Helvetica, sans-serif;
 }
 
-body{
-    width:100vw;
-    height:100vh;
-    
+body {
+    width: 100vw;
+    height: 100vh;
+
 }
 
-.container{
+.container {
     display: flex;
     flex-direction: column;
-    height:100%;
+    height: 100%;
     width: 100%;
     align-items: center;
 }
 
-.signup-header{
+.signup-header {
     position: relative;
-    
+
     display: flex;
     flex-direction: row;
     width: 100%;
     justify-content: center;
-    flex:0.6;
+    flex: 0.6;
     align-items: center;
 }
 
-#logo{
+#logo {
     margin-left: 20px;
 }
 
-.signup-input{
-    width:50%;
-    height:50%;
-    display:flex;
+.signup-input {
+    width: 50%;
+    height: 50%;
+    display: flex;
     justify-content: center;
     align-items: center;
     background: linear-gradient(to bottom, #92df8b, #feb47b);
@@ -46,41 +46,46 @@ body{
     border-radius: 20px;
 }
 
-input{
+input {
     border: 1px blanchedalmond solid;
     border-radius: 10px;
-    width:100%;
-    height:30px
+    width: 100%;
+    height: 30px
 }
 
-label{
+label {
     font-size: 20px;
 }
 
-form{
+form {
     background: radial-gradient(to bottom, #92df8b, #feb47b);
-    width:100%;
-    height:100%;
+    width: 100%;
+    height: 100%;
 }
 
-.input-container{
-    width:100%;
-    margin-top:5%;
+.input-container {
+    width: 100%;
+    margin-top: 5%;
     display: flex;
     flex-direction: column;
 }
 
-button{
+button {
     border: 1px blanchedalmond solid;
     border-radius: 10px;
-    width:200px;
-    height:50px;
+    width: 200px;
+    height: 50px;
     background: linear-gradient(to bottom, #92df8b, #feb47b);
     margin-top: 10%;
     font-size: 17px;
 }
 
-button:hover{
+button:hover {
     background: linear-gradient(to bottom, #ffc400, #feb47b);
     color: rgb(75, 49, 0);
+}
+
+.error-message{
+    background-color: yellow;
+    color: red;
 }
