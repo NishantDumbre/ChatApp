@@ -6,22 +6,21 @@
 }
 
 body {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
 
 }
 
 .container {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     align-items: center;
 }
 
 .signup-header {
     position: relative;
-
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -48,9 +47,11 @@ body {
 
 input {
     border: 1px blanchedalmond solid;
-    border-radius: 10px;
+    border-radius: 20px;
     width: 100%;
-    height: 30px
+    height: 30px;
+    box-sizing: border-box;
+    padding: 20px;
 }
 
 label {

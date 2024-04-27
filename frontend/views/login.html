@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
+    <title>Login</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <link rel="stylesheet" href="../styles/login.css">
 </head>
@@ -15,23 +15,27 @@
         </div>
         <div class="login-input">
             <form action="" id="login-form">
-                <div class="email-input">
+                <div class="email-input input-container">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required>
                 </div>
-                <div class="password-input">
+                <div class="email-error">
+            
+                </div>
+                <div class="password-input input-container">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required>
                 </div>
+                <div class="password-error">
+            
+                </div>
             </form>
-        </div>
-        <div class="error">
-
+            <a href="./forgot-password.html">Forgot Password?</a>
             
         </div>
         <div class="button-container">
-            <button type="click" id="submit">Login</button>
-            <button type="click" id="forgot-password">Forgot Password?</button>
+            <button type="click" id="login">Login</button>
+            <button type="click" id="signup">Create Account</button>
         </div>
     </div>
 </body>
