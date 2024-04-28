@@ -1,33 +1,25 @@
-let login = document.getElementById('login')
-let signup = document.getElementById('signup')
+let reset = document.getElementById('reset')
 let email = document.getElementById('email')
-let password = document.getElementById('password')
 
-
-login.addEventListener('click', loginUser)
-signup.addEventListener('click', createUser)
+reset.addEventListener('click', sendResetURL)
 
 let URL = 'http://localhost:3000'
 
 
-function createUser() {
-    window.location.href = '../views/signup.html'
-}
 
 
-async function loginUser(e) {
+async function sendResetURL(e) {
     e.preventDefault()
 
     let obj = {
         email: email.value,
-        password: password.value
     }
 
-    if (!obj.email || !obj.password) {
+    if (!obj.email) {
         generalError()
     }
     else {
-        let result = await axios.post(`${URL}/login`, obj)
+        let result = await axios.post(`${URL}/forgot-password`, obj)
         console.log(result.data)
         if (result.data.success == false) {
             const { failed } = result.data
@@ -39,8 +31,7 @@ async function loginUser(e) {
         }
         else {
             console.log(result.data, 'pass')
-            localStorage.setItem('token', result.data.token)
-            //window.location.href = './login.html'
+            successMessage()
         }
     }
 }
@@ -62,20 +53,33 @@ function specificError(data) {
     else {
         alert('Someting went wrong. Please try again')
     }
-
 }
-
 
 
 
 function generalError() {
     let errorMessage = document.createElement('p')
-    errorMessage.innerHTML = 'Please fill all fields'
+    errorMessage.innerHTML = 'Please enter the email'
     errorMessage.className = 'error-message'
-    let errorContainer = document.getElementById(`password-error`)
+    let errorContainer = document.getElementById(`email-error`)
     errorContainer.appendChild(errorMessage)
 
     setTimeout(() => {
         errorMessage.remove()
     }, 1000);
+}
+
+
+
+function successMessage() {
+    let errorMessage = document.createElement('p')
+    errorMessage.innerHTML = 'Sent email. Redirecting you to login page'
+    errorMessage.className = 'error-message'
+    let errorContainer = document.getElementById(`email-error`)
+    errorContainer.appendChild(errorMessage)
+
+    setTimeout(() => {
+        errorMessage.remove()
+        window.location.href = '../views/login.html'
+    }, 2000);
 }

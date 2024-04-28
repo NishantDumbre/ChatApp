@@ -11,6 +11,7 @@ require('dotenv').config()
 const routes = require('./backend/routes/routes')
 const sequelize = require('./backend/util/database')
 const Users = require('./backend/models/usersModel')
+const ForgotPasswordRequest = require('./backend/models/forgotPasswordRequests')
 
 
 const app = express()
@@ -25,6 +26,13 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json({ extended: false }));
+
+
+
+Users.hasMany(ForgotPasswordRequest, {
+    foreignKey: 'userId', // This is the foreign key in the ForgotPasswordRequest table
+    onDelete: 'CASCADE' // If a user is deleted, also delete their associated forgot password requests
+});
 
 app.use(routes)
 
