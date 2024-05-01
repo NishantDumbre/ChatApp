@@ -1,7 +1,7 @@
 const sequelize = require('../util/database')
 const Sequelize = require('sequelize')
 
-const passwordRequest = sequelize.define('passwordRequest',{
+const PasswordRequest = sequelize.define('passwordRequest',{
     id:{
         primaryKey:true,
         type: Sequelize.STRING,
@@ -14,4 +14,4 @@ const passwordRequest = sequelize.define('passwordRequest',{
     },
 })
 
-module.exports = passwordRequest
+module.exports = PasswordRequest

@@ -40,7 +40,7 @@ async function loginUser(e) {
         else {
             console.log(result.data, 'pass')
             localStorage.setItem('token', result.data.token)
-            //window.location.href = './login.html'
+            window.location.href = './chat.html'
         }
     }
 }

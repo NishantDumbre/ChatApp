@@ -131,3 +131,10 @@ exports.postForgotPassword = async (req, res, next) => {
     }
 
 }
+
+
+
+exports.getMyUser = async(req,res,next) =>{
+    console.log(req.user)
+    res.json(req.user.id)
+}

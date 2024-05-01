@@ -11,6 +11,7 @@ require('dotenv').config()
 const routes = require('./backend/routes/routes')
 const sequelize = require('./backend/util/database')
 const Users = require('./backend/models/usersModel')
+const Messages = require('./backend/models/messagesModel')
 const ForgotPasswordRequest = require('./backend/models/forgotPasswordRequests')
 
 
@@ -33,6 +34,9 @@ Users.hasMany(ForgotPasswordRequest, {
     foreignKey: 'userId', // This is the foreign key in the ForgotPasswordRequest table
     onDelete: 'CASCADE' // If a user is deleted, also delete their associated forgot password requests
 });
+
+Messages.belongsTo(Users, { foreignKey: 'user1', as: 'User1' });
+Messages.belongsTo(Users, { foreignKey: 'user2', as: 'User2' });
 
 app.use(routes)
 

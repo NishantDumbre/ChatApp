@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="../styles//chat.css">
 </head>
+
 <body>
     <div class="left">
         <div class="options-container">
@@ -18,63 +20,34 @@
         </div>
         <div class="chat-container">
             <ul class="user-list" id="user-list">
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3 class="user-name">Name of person</h3>
-            </li>
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3>Name of person</h3>
-            </li>
-
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3 class="user-name">Name of person</h3>
-            </li>
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3>Name of person</h3>
-            </li><li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3 class="user-name">Name of person</h3>
-            </li>
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3>Name of person</h3>
-            </li><li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3 class="user-name">Name of person</h3>
-            </li>
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3>Name of person</h3>
-            </li><li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3 class="user-name">Name of person</h3>
-            </li>
-            <li class="list-user">
-                <img src="../../img.png" alt="DP" class="user-dp">
-                <h3>Name of person</h3>
-            </li>
+                <li class="list-user">
+                    <img src="../../img.png" alt="DP" class="user-dp">
+                    <h3 class="user-name">Name of person</h3>
+                </li>
+                
             </ul>
         </div>
     </div>
     <div class="right">
-        <div class="title-container">
+        <div class="title-container" id="title-container">
             <img src="../../img.png" alt="DP" class="user-dp">
-                <h3 class="user-name">Name of person</h3>
+            <h3 class="user-name">Name of person</h3>
         </div>
-        <div class="chat-box">
+        <div class="chat-box" id="chat-box">
             <ul id="chats-list" class="chats-list">
-                <li>This is a chat</li>
+                <li class="my-chat chat-window">My chat</li>
+                <li class="others-chat chat-window">Senders chat</li>
             </ul>
         </div>
         <div class="message-box">
-            <input type="text" id="message" class="message">
-            <button class="send" id="send">Send</button>
+            <form action="">
+                <input type="text" id="message" class="message">
+                <button type="submit" class="send" id="send">Send</button>
+            </form>
         </div>
     </div>
 </body>
 
 <script src="../scripts//chat.js"></script>
+
 </html>
