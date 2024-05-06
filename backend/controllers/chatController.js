@@ -1,6 +1,6 @@
 const Sequelize = require('../util/database')
 const Users = require('../models/usersModel')
-const ForgotPasswordRequest = require('../models/forgotPasswordRequests')
+const Groups = require('../models/groupModel')
 const Messages = require('../models/messagesModel')
 
 const { Op } = require('sequelize');
@@ -18,10 +18,13 @@ function generateToken(id, name) {
 exports.getContacts = async (req, res, next) => {
     let loggedinUser = req.user
     try {
-
-        let contacts = await Users.findAll({ where: { id: { [Op.not]: loggedinUser.id } } })
-        res.status(200).json({ succees: true, contacts })
+        const myUser = await Users.findByPk(req.user.id)
+        const groups = await myUser.getGroups()
+        const contacts = await Users.findAll({ where: { id: { [Op.not]: loggedinUser.id } }, attributes: ['name', 'email', 'secretId']
+    })
+        res.status(200).json({ succees: true, contacts, groups })
     } catch (error) {
+        console.log(error)
         res.status(400).json({ success: false, message: 'Error fetching users' })
     }
 }
@@ -30,8 +33,8 @@ exports.getContacts = async (req, res, next) => {
 
 exports.getUserId = async (req, res, next) => {
     try {
-        const { email } = req.params
-        let user = await Users.findOne({ where: { email } })
+        const { secretId } = req.params
+        let user = await Users.findOne({ where: { secretId } })
         res.status(200).json({ success: true, token: generateToken(user.dataValues.id, user.dataValues.name), name:user.dataValues.name})
     } catch (error) {
         res.status(400).json({ success: false, message: 'Error getting ID' })
@@ -57,6 +60,7 @@ exports.postSendMessage = async (req, res, next) => {
         let details = {myId: req.user.id, sender: req.user.id}
 
         await t.commit()
+        
         res.status(200).json({ success: true, details })
 
     } catch (error) {

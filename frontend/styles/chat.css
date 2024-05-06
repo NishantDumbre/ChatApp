@@ -46,7 +46,7 @@ body {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
-button {
+.button {
     border: 1px blanchedalmond solid;
     border-radius: 10px;
     width: 100px;
@@ -56,35 +56,40 @@ button {
     padding: 5px;
 }
 
-button:hover {
+.button:hover {
     background: linear-gradient(to bottom, #ffc400, #feb47b);
     color: rgb(75, 49, 0);
 }
 
-.list-user {
+.list-user,
+.list-group{
     display: flex;
     align-items: center;
     margin: 30px;
     border: 1px black solid;
 }
 
-.list-user:hover {
-    background-color: lightgray; 
+.list-user:hover,
+.list-group:hover{
+    background-color: lightgray;
 }
 
-.list-user:active {
-    background-color: rgb(218, 39, 39); 
+.list-user:active,
+.list-group:active {
+    background-color: rgb(218, 39, 39);
 }
 
 
-.user-dp {
+.user-dp,
+.group-dp {
     height: 60px;
     border-radius: 50px;
     margin-right: 10px;
 }
 
-.user-list {
-    overflow-y: auto; 
+.user-list,
+.group-list {
+    overflow-y: auto;
     max-height: calc(100vh - 160px);
     background-color: #feb47b;
     padding: 10px;
@@ -92,7 +97,7 @@ button:hover {
 }
 
 
-.title-container{
+.title-container {
     display: flex;
     align-items: center;
     border: 1px black solid;
@@ -101,19 +106,21 @@ button:hover {
 }
 
 
-.chat-box{
+.chat-box {
     background-color: red;
     flex-grow: 12;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
 }
 
-.message-box{
+.message-box {
     flex-grow: 1;
     padding: 10px;
     display: flex;
 }
 
-form{
+form {
     height: 100%;
     width: 100%;
     display: flex;
@@ -127,18 +134,19 @@ form{
     padding: 10px;
     border: 1px rgb(77, 50, 50) solid;
     border-radius: 10px;
-    box-sizing: content-box; /* Reset box-sizing to its default value */
+    box-sizing: content-box;
+    /* Reset box-sizing to its default value */
     margin-right: 10px;
 }
 
 
-.chats-list{
+.chats-list {
     display: flex;
     flex-direction: column;
 }
 
 
-.chat-window{
+.chat-window {
     background: linear-gradient(to bottom, #ffc400, #c08557);
     margin: 10px;
     margin-left: 20px;
@@ -150,10 +158,56 @@ form{
 }
 
 
-.my-chat {
+.others-chat {
     margin-right: auto;
 }
 
-.others-chat {
+.my-chat {
     margin-left: auto;
+}
+
+
+
+/* Modal styles */
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    /* Could be more or less, depending on content */
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }

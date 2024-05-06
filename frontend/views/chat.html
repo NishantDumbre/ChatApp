@@ -6,43 +6,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="../styles//chat.css">
 </head>
 
 <body>
     <div class="left">
         <div class="options-container">
-            <button type="click" id="new-chat">New chat</button>
-            <button type="click" id="new-group">New Group</button>
+            <button type="click" id="new-chat" class="button">New chat</button>
+            <button type="click" id="new-group" class="button">New Group</button>
         </div>
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="group-user-holder-container">
+                    <ul id="group-user-holder">
+
+                    </ul>
+                </div>
+                <form action="" id="add-user-form">
+                    <input type="text" id="group-name" class="text-input" placeholder="Enter group name">
+                    <select name="search-members" id="search-members">
+                        
+                    </select>
+                    <button type="click" id="add-user" class="button">Create Group</button>
+                </form>
+            </div>
+        </div>
+
         <div class="search-container">
             <input type="text" id="search-chats" class="text-input" placeholder="Search chats or groups">
         </div>
         <div class="chat-container">
             <ul class="user-list" id="user-list">
-                <li class="list-user">
-                    <img src="../../img.png" alt="DP" class="user-dp">
-                    <h3 class="user-name">Name of person</h3>
-                </li>
-                
             </ul>
         </div>
     </div>
     <div class="right">
         <div class="title-container" id="title-container">
             <img src="../../img.png" alt="DP" class="user-dp">
-            <h3 class="user-name">Name of person</h3>
+            <h3 class="user-name"></h3>
         </div>
         <div class="chat-box" id="chat-box">
             <ul id="chats-list" class="chats-list">
-                <li class="my-chat chat-window">My chat</li>
-                <li class="others-chat chat-window">Senders chat</li>
+
             </ul>
         </div>
         <div class="message-box">
             <form action="">
                 <input type="text" id="message" class="message">
-                <button type="submit" class="send" id="send">Send</button>
+                <button type="submit" id="send" class="button">Send</button>
             </form>
         </div>
     </div>
