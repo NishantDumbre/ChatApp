@@ -37,13 +37,17 @@ Users.hasMany(ForgotPasswordRequest, {
     onDelete: 'CASCADE' // If a user is deleted, also delete their associated forgot password requests
 });
 
-// Messages and Users
+// Messages and Users 1 to 1, specified 2 foreign keys
 Messages.belongsTo(Users, { foreignKey: 'user1', as: 'User1' });
 Messages.belongsTo(Users, { foreignKey: 'user2', as: 'User2' });
 
 // Users and Groups many to many
 Groups.belongsToMany(Users, { through: UserGroup });
 Users.belongsToMany(Groups, { through: UserGroup });
+
+
+Groups.hasMany(Messages)
+Messages.belongsTo(Groups)
 
 
 app.use(routes);

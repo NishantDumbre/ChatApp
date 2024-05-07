@@ -22,7 +22,7 @@ const URL = 'http://localhost:3000'
 
 
 
-// Fetches the number of registered users from DB. Then a function called createContact is passed that generates the list of contacts in left band
+// Fetches the number of registered users and groups from DB. Then a function called createContact is passed that generates the list of contacts in left band
 async function generateContacts() {
     let token = localStorage.getItem('token')
     let userAndGroups = await axios.get(`${URL}/get-contacts`, { headers: { 'Authorization': token } })
@@ -39,27 +39,27 @@ async function generateContacts() {
 
 
 
-// Selects a user, id has emailID stored for identification. Gets the actual ID's token of selectd user and saves it. Loads chat window and then all the chats
+// Selects a user or groups, id has the uuid stored for identification. Gets the actual ID's token of selectd user and saves it. Loads chat window and then all the chats. Appending the category in class on send button. Will be used to send message to either a group or a user
 async function selectUserChat(e) {
     const mainElement = e.target.tagName === 'IMG' || e.target.tagName === 'H3' ? e.target.parentElement : e.target;
     const type = mainElement.classList.contains('list-user') ? 'user' : 'group'
-        
-    const trueID = await axios.get(`${URL}/get-${type}-id/${mainElement.id}`)    
-        console.log(trueID)
-    const { token } = trueID.data   // user2 token
-    const user1Token = localStorage.getItem('token')  // user1 token
-    const { name } = trueID.data     // user2 name
+    send.classList = type == 'user' ? 'button user' : 'button group'
+
+    const trueID = await axios.get(`${URL}/get-${type}-id/${mainElement.id}`)    // gets the 2nd user or group's token
+    const { token } = trueID.data       // user2 or group token
+    const user1Token = localStorage.getItem('token')        // user1, that is my token
+    const { name } = trueID.data        // user2 or group name
     localStorage.setItem('user2', token)
     console.log(name)
-    // await loadUserChatWindow(name)
-    // console.log('chat window loaded')
-    // loadUserChats(user1Token, token)
+    await loadUserChatWindow(name)
+    console.log('chat window loaded')
+    loadUserChats(user1Token, token)
 }
 
 
 
 
-// Fetches all chats. Then runs a function to manipulate DOM for each data element 
+// Fetches all chats for A User. Then runs a function to manipulate DOM for each data element 
 async function loadUserChats(user1Token, user2Token) {
     return new Promise(async (resolve, reject) => {
         let obj = {
@@ -83,7 +83,7 @@ async function loadUserChats(user1Token, user2Token) {
 
 
 
-// Creates the chat DOM for the chat data passed. This functionw will be passed to another function that fetches all chats
+// Creates the chat DOM for the chat data passed. This functionw will be passed to another function that fetches all chats. Used for both users and groups
 function createChats(data, myId) {
     let list = document.getElementById('chats-list')
     let li = document.createElement('li')
@@ -103,7 +103,7 @@ function createChats(data, myId) {
 
 
 
-// Removes existing chat window and loads the chat window of selected user. Returns a promise
+// Removes existing chat window and loads the chat window of selected user or groups. Returns a promise
 async function loadUserChatWindow(name) {
     return new Promise((resolve, reject) => {
         let chatWindowDiv = document.getElementById('chat-box')
@@ -123,7 +123,7 @@ async function loadUserChatWindow(name) {
 
 
 
-// Creates the contact person UI and appends it to the left band contact list container
+// Creates the contact person UI and appends it to the left band contact list container. Used for both users and groups
 function createContact(contacts) {
     
     const typeClass = type == 'user' ? 'user' : 'group'
@@ -148,18 +148,19 @@ function createContact(contacts) {
 
 
 
-
+// Used to send message
 async function sendMessage(e) {
     e.preventDefault()
+    let category = send.classList.contains('user') ? 'user' : 'group'
 
     let obj = {
         message: message.value,
         user1: localStorage.getItem('token'),
-        user2: localStorage.getItem('user2')
+        user2: localStorage.getItem('user2'),
+        category
     }
     console.log(obj)
-    socket.emit('send-message', message.value)
-    let result = await axios.post(`${URL}/send-message`, obj, { headers: { 'Authorization': obj.user1 } })
+    let result = await axios.post(`${URL}/send-${category}-message`, obj, { headers: { 'Authorization': obj.user1 } })
     console.log(result.data.details)
     const { myId } = result.data.details
     const { sender } = result.data.details
@@ -173,6 +174,7 @@ async function sendMessage(e) {
 
 
 
+// Used in Create Group button. Loads the list of available users to add to the group
 async function getContacts() {
     let token = localStorage.getItem('token')
     let user = await axios.get(`${URL}/get-contacts`, { headers: { 'Authorization': token } })
@@ -202,9 +204,10 @@ async function getContacts() {
 
 
 
+// Used in Create Group functionality. Selects members to add in a group
 function addMember(e) {
-    let selectedIndex = e.target.selectedIndex;
-    let selectedOption = e.target.options[selectedIndex];
+    let selectedIndex = e.target.selectedIndex;     // gets the index of the selected option
+    let selectedOption = e.target.options[selectedIndex];      // gets the selected option
 
     let li = document.createElement('li')
     li.id = `${selectedOption.id}`
@@ -217,12 +220,13 @@ function addMember(e) {
 
     li.appendChild(p)
     li.appendChild(button)
-    selectedOption.remove()
+    selectedOption.remove()     // removes the option from the select list since we are adding it to our selected users
     createGroupUsers.appendChild(li)
 }
 
 
 
+// Used in Create Group functionality. Removes the selected user from the create group list and makes it available to select again
 function removeCreateGroupUsers(e) {
     if (e.target.classList.contains('delete')) {
         let parentEle = e.target.parentElement
@@ -238,6 +242,8 @@ function removeCreateGroupUsers(e) {
 
 
 
+
+// Creates a new group and appends the DOM to the left contacts list
 async function createNewGroup(e) {
     e.preventDefault()
     let groupName = document.getElementById('group-name').value
@@ -254,8 +260,8 @@ async function createNewGroup(e) {
         let token = localStorage.getItem('token')
         console.log(groupName)
         let group = await axios.post(`${URL}/create-group/${groupName}`, arrUsers, { headers: { 'Authorization': token } })
-        console.log(group.data.admin)
-        console.log(group.data.members)
+        console.log(group.data, 'this is the group name')
+        createContact(group.data, type='group')
     }
 
 }

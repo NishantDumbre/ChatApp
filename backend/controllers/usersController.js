@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const Sib = require('sib-api-v3-sdk');
 
 
+
 function generateToken(id, name) {
     return jwt.sign({ userId: id, name }, process.env.TOKEN_SECRET_KEY)
 }
@@ -39,7 +40,8 @@ exports.postSignup = async (req, res, next) => {
                     name,
                     email,
                     phone,
-                    password: hash
+                    password: hash,
+                    secretId: uuidv4()
                 }, { transaction: t });
                 await t.commit();
                 res.status(201).json({ success: true });

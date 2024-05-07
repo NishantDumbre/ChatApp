@@ -12,8 +12,10 @@ router.post('/forgot-password', userController.postForgotPassword)
 
 router.get('/get-contacts', authenticationMiddleware.authenticate, chatController.getContacts)
 router.get('/get-user-id/:secretId', chatController.getUserId)
+router.get('/get-group-id/:secretId', groupController.getGroupId)
 
-router.post('/send-message', authenticationMiddleware.authenticate, authenticationMiddleware.decodeUsers, chatController.postSendMessage) 
+router.post('/send-user-message', authenticationMiddleware.authenticate, authenticationMiddleware.decodeUsers, chatController.postSendMessage) 
+router.post('/send-group-message', authenticationMiddleware.authenticate, authenticationMiddleware.decodeGroups, groupController.postSendMessage) 
 router.post('/get-messages', authenticationMiddleware.authenticate, authenticationMiddleware.decodeUsers, chatController.getAllMessagesBetweenUsers) 
 router.get('/get-myUser', authenticationMiddleware.authenticate, userController.getMyUser) 
 

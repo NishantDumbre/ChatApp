@@ -1,6 +1,6 @@
 const sequelize = require('../util/database')
 const Sequelize = require('sequelize')
-const { v4: uuidv4 } = require('uuid');
+
  
 
 const Users = sequelize.define('users',{
@@ -30,7 +30,7 @@ const Users = sequelize.define('users',{
     },
     secretId:{
         type: Sequelize.STRING,
-        defaultValue: uuidv4()
+        allowNull: false
     }
 })
 

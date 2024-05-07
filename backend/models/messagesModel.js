@@ -1,5 +1,5 @@
 const sequelize = require('../util/database')
-const Sequelize = require('sequelize')
+const { Sequelize, DataTypes } = require('sequelize')
 
 const Messages = sequelize.define('messages',{
     id:{
@@ -19,6 +19,10 @@ const Messages = sequelize.define('messages',{
     },
     sender:{
         type:Sequelize.INTEGER
+    },
+    category:{
+        type: DataTypes.ENUM('user', 'group'),
+        defaultValue: 'user'
     }
 })
 
