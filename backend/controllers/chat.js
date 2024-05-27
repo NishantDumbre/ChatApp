@@ -1,28 +1,22 @@
-const Sequelize = require('../util/database')
-const Users = require('../models/usersModel')
-const Groups = require('../models/groupModel')
-const Messages = require('../models/messagesModel')
+const Sequelize = require('../utils/database')
+const Users = require('../models/users')
+const Groups = require('../models/groups')
+const Messages = require('../models/messages')
 
 const { Op } = require('sequelize');
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const { v4: uuidv4 } = require('uuid');
 
 
-
-function generateToken(id, name) {
-    return jwt.sign({ userId: id, name }, process.env.TOKEN_SECRET_KEY)
-}
 
 
 
 exports.getContacts = async (req, res, next) => {
     let loggedinUser = req.user
     try {
-        const myUser = await Users.findByPk(req.user.id)
-        const groups = await myUser.getGroups()
-        const contacts = await Users.findAll({ where: { id: { [Op.not]: loggedinUser.id } }, attributes: ['name', 'email', 'secretId']
-    })
+        const user = await Users.findByPk(req.user.id)
+        const groups = await user.getGroups()
+        const contacts = await Users.findAll({
+            where: { id: { [Op.not]: loggedinUser.id } }, attributes: ['name', 'email', 'id']
+        })
         res.status(200).json({ succees: true, contacts, groups })
     } catch (error) {
         console.log(error)
@@ -32,38 +26,22 @@ exports.getContacts = async (req, res, next) => {
 
 
 
-exports.getUserId = async (req, res, next) => {
-    try {
-        const { secretId } = req.params
-        console.log(secretId)
-        let user = await Users.findOne({ where: { secretId } })
-        console.log(user)
-        res.status(200).json({ success: true, token: generateToken(user.dataValues.id, user.dataValues.name), name:user.dataValues.name})
-    } catch (error) {
-        res.status(400).json({ success: false, message: 'Error getting ID' })
-    }
-}
-
-
-
 
 exports.postSendMessage = async (req, res, next) => {
     const t = await Sequelize.transaction();
     try {
-        console.log(req.user.name)
-        console.log(req.user2.name)
+        const { user } = req
+        const receiver = await Users.findByPk(req.body.receiver)
 
         const message = await Messages.create({
             message: req.body.message,
-            user1: req.user.id,
-            user2: req.user2.id,
-            sender: req.user.id,
+            user1: user.id,
+            user2: receiver.id,
+            sender: user.id,
         }, { transaction: t })
 
-        const details = {myId: req.user.id, sender: req.user.id}
-
+        const details = { myId: user.id, sender: user.id }
         await t.commit()
-        
         res.status(200).json({ success: true, details })
 
     } catch (error) {
@@ -78,8 +56,9 @@ exports.postSendMessage = async (req, res, next) => {
 exports.getAllMessagesBetweenUsers = async (req, res, next) => {
     try {
         const user1Id = req.user.id
-        const user2Id = req.user2.id
-
+        const user2Id = req.body.receiver
+        console.log(req.body)
+        console.log(user2Id, user1Id)
         const messages = await Messages.findAll({
             where: {
                 [Op.or]: [
@@ -93,7 +72,7 @@ exports.getAllMessagesBetweenUsers = async (req, res, next) => {
             ],
             order: [['createdAt', 'ASC']]
         });
-        
+
         res.status(200).json(messages);
     } catch (error) {
         console.error(error);

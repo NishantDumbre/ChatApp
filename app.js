@@ -1,28 +1,44 @@
+// Nodejs core modules
+const fs = require('fs');
+const path = require('path');
+
+
+// Nodejs npm installed modules
 const express = require('express');
 const bodyParser = require('body-parser');
+require('dotenv').config();
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+
 
 // Importing socket.io
 const http = require('http');
 const socketIo = require('socket.io');
 
-const routes = require('./backend/routes/routes');
-const sequelize = require('./backend/util/database');
-const Users = require('./backend/models/usersModel');
-const Groups = require('./backend/models/groupModel');
-const UserGroup = require('./backend/models/userGroupModel');
-const Messages = require('./backend/models/messagesModel');
-const ForgotPasswordRequest = require('./backend/models/forgotPasswordRequests');
+
+// Utils
+const sequelize = require('./backend/utils/database');
+// Models
+const User = require('./backend/models/users');
+const Group = require('./backend/models/groups');
+const UserGroup = require('./backend/models/user-groups');
+const Message = require('./backend/models/messages');
+const ForgotPasswordRequest = require('./backend/models/forgot-password-requests');
+
+
+// Route imports
+const homepageRoutes = require('./backend/routes/homepage');
+const userRoutes = require('./backend/routes/user');
+const groupRoutes = require('./backend/routes/group');
+
+
 
 const app = express();
-const server = http.createServer(app); // Creating HTTP server
 
+
+// Middlewares
 app.use(helmet());
 app.use(compression());
 app.use(cors({
@@ -31,28 +47,38 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ extended: false }));
 
-// User and password requests
-Users.hasMany(ForgotPasswordRequest, {
-    foreignKey: 'userId', // This is the foreign key in the ForgotPasswordRequest table
-    onDelete: 'CASCADE' // If a user is deleted, also delete their associated forgot password requests
+
+// Routes
+app.use(homepageRoutes);
+app.use(userRoutes);
+app.use(groupRoutes);
+
+
+/* ---------- Database relations start ---------- */
+
+// User -> ForgotPasswordRequest : one to many
+User.hasMany(ForgotPasswordRequest, {
+    foreignKey: 'userId', 
+    onDelete: 'CASCADE' 
 });
 
-// Messages and Users 1 to 1, specified 2 foreign keys
-Messages.belongsTo(Users, { foreignKey: 'user1', as: 'User1' });
-Messages.belongsTo(Users, { foreignKey: 'user2', as: 'User2' });
+// Message -> User : one to one  (specified 2 foreign keys)
+Message.belongsTo(User, { foreignKey: 'user1', as: 'User1' });
+Message.belongsTo(User, { foreignKey: 'user2', as: 'User2' });
+Message.belongsTo(User, { foreignKey: 'sender', as: 'Sender' });
 
-// Users and Groups many to many
-Groups.belongsToMany(Users, { through: UserGroup });
-Users.belongsToMany(Groups, { through: UserGroup });
+// User -> Group : many to many
+Group.belongsToMany(User, { through: UserGroup });
+User.belongsToMany(Group, { through: UserGroup });
+
+// Group -> Message : one to many
+Group.hasMany(Message)
+Message.belongsTo(Group)
+
+/* ---------- Database relations end ---------- */
 
 
-Groups.hasMany(Messages)
-Messages.belongsTo(Groups)
-
-
-app.use(routes);
-
-
+// Sync and start the server
 sequelize.sync()
     .then(() => {
         app.listen(3000)

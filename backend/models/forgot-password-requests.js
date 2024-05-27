@@ -1,11 +1,11 @@
-const sequelize = require('../util/database')
-const Sequelize = require('sequelize')
+const sequelize = require('../utils/database')
+const { Sequelize } = require('sequelize');
 
 const PasswordRequest = sequelize.define('passwordRequest',{
     id:{
         primaryKey:true,
-        type: Sequelize.STRING,
-        allowNull:false
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
     },
     email:{
         type: Sequelize.STRING,

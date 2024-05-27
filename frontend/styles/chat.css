@@ -11,14 +11,16 @@ body {
 }
 
 .left {
-    background-color: rgb(219, 174, 174);
+    background-color: rgb(255, 126, 126);
     flex-grow: 1;
 }
 
 .right {
     display: flex;
     flex-direction: column;
-    flex-grow: 3
+    flex-grow: 3;
+    min-width: 70vw;
+    max-width: 70vw;
 }
 
 .options-container {
@@ -67,11 +69,14 @@ body {
     align-items: center;
     margin: 30px;
     border: 1px black solid; 
+    border-radius: 5px;
+    background-color: rgb(255, 176, 176);;
 }
 
 .list-user:hover,
 .list-group:hover{
-    background-color: lightgray;
+    background-color: antiquewhite;
+    transition: background-color 0.8s ease;
 }
 
 .list-user:active,
@@ -91,7 +96,7 @@ body {
 .group-list {
     overflow-y: auto;
     max-height: calc(100vh - 160px);
-    background-color: #feb47b;
+    background: linear-gradient(to top, #92df8b, #feb47b);
     padding: 10px;
     margin-top: 20px;
 }
@@ -101,13 +106,18 @@ body {
     display: flex;
     align-items: center;
     border: 1px black solid;
-    background-color: rgb(106, 145, 88);
+    background: linear-gradient(to right, #92df8b, #feb47b);
     padding: 10px;
+    transition: background-color 0.8s ease;
+}
+
+.title-container:active{
+    background-color: red;
 }
 
 
 .chat-box {
-    background-color: red;
+    background-color: antiquewhite;
     flex-grow: 12;
     overflow-y: auto;
     display: flex;
@@ -115,9 +125,9 @@ body {
 }
 
 .message-box {
-    flex-grow: 1;
-    padding: 10px;
+    padding: 20px;
     display: flex;
+    max-height: 200px; 
 }
 
 form {
@@ -158,33 +168,37 @@ form {
 }
 
 
-.others-chat {
-    margin-right: auto;
-}
-
 .my-chat {
     margin-left: auto;
+    max-width: 30%; /* Limit maximum width */
+    word-wrap: break-word; /* Allow long words to break and wrap */
+    white-space: normal; /* Allow normal line wrapping */
+    overflow-wrap: break-word; /* Allow word break for long words */
+}
+
+.others-chat {
+    margin-right: auto;
+    max-width: 30%; /* Limit maximum width */
+    word-wrap: break-word; /* Allow long words to break and wrap */
+    white-space: normal; /* Allow normal line wrapping */
+    overflow-wrap: break-word; /* Allow word break for long words */
 }
 
 
 
-/* Modal styles */
+
 .modal {
     display: none;
-    /* Hidden by default */
     position: fixed;
-    /* Stay in place */
     z-index: 1;
-    /* Sit on top */
     left: 0;
     top: 0;
     width: 100%;
-    /* Full width */
     height: 100%;
     /* Full height */
     overflow: auto;
     /* Enable scrolling if needed */
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.6);
     /* Black w/ opacity */
 }
 
@@ -210,4 +224,9 @@ form {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+
+.group-name-container{
+    font-size: x-large;
 }

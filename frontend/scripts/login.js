@@ -19,63 +19,40 @@ async function loginUser(e) {
     e.preventDefault()
 
     let obj = {
-        email: email.value,
-        password: password.value
+        email: email.value.trim(),
+        password: password.value.trim()
     }
 
     if (!obj.email || !obj.password) {
-        generalError()
+        displayError({ errorType: 'emptyFields', message: 'Please fill all fields' });
     }
     else {
-        let result = await axios.post(`${URL}/login`, obj)
-        console.log(result.data)
-        if (result.data.success == false) {
-            const { failed } = result.data
-            console.log(failed, 'failed')
-
-            for (let data of failed) {
-                specificError(data)
-            }
+        try {
+            const result = await axios.post(`${URL}/login`, obj)
+            localStorage.setItem('token', result.data.token);   // then block
+            window.location.href = './chat.html';
         }
-        else {
-            console.log(result.data, 'pass')
-            localStorage.setItem('token', result.data.token)
-            window.location.href = './chat.html'
+        catch (error) {     // catch block
+            console.log(error)
+            const { errors } = error.response.data;
+                displayError(errors);
         }
     }
 }
 
 
 
-function specificError(data) {
-    let errorContainer = document.getElementById(`${data.error}-error`)
-    if (errorContainer) {
-        let errorMessage = document.createElement('p')
-        errorMessage.innerHTML = data.message
-        errorMessage.className = 'error-message'
-
-        errorContainer.appendChild(errorMessage)
-        setTimeout(() => {
-            errorMessage.remove()
-        }, 1000);
-    }
-    else {
-        alert('Someting went wrong. Please try again')
-    }
-
-}
-
-
-
-
-function generalError() {
+function displayError(error) {
+    if (error.errorType == 'serverError') error.errorType = 'password'      // show internal server error near password block
+    if (error.errorType == 'emptyFields') error.errorType = 'password'      // show emptyFields error near password block
+    let errorContainer = document.getElementById(`${error.errorType}-error`)
     let errorMessage = document.createElement('p')
-    errorMessage.innerHTML = 'Please fill all fields'
+    errorMessage.innerHTML = error.message
     errorMessage.className = 'error-message'
-    let errorContainer = document.getElementById(`password-error`)
-    errorContainer.appendChild(errorMessage)
 
+    errorContainer.appendChild(errorMessage)
     setTimeout(() => {
         errorMessage.remove()
     }, 1000);
 }
+

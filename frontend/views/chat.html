@@ -16,7 +16,7 @@
             <button type="click" id="new-chat" class="button">New chat</button>
             <button type="click" id="new-group" class="button">New Group</button>
         </div>
-        <div id="modal" class="modal">
+        <div id="new-group-modal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <div id="group-user-holder-container">
@@ -27,7 +27,7 @@
                 <form action="" id="add-user-form">
                     <input type="text" id="group-name" class="text-input" placeholder="Enter group name">
                     <select name="search-members" id="search-members">
-                        
+
                     </select>
                     <button type="click" id="add-user" class="button">Create Group</button>
                 </form>
@@ -46,6 +46,18 @@
         <div class="title-container" id="title-container">
             <img src="../../img.png" alt="DP" class="user-dp">
             <h3 class="user-name"></h3>
+        </div>
+        <div id="group-user-details-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="group-user-details-container">
+                    <h2>Group Name</h2><span id="group-name-container" class="group-name-container"></span>
+                    <span id="group-details-name"></span>
+                    <ul id="group-user-details">
+
+                    </ul>
+                </div>
+            </div>
         </div>
         <div class="chat-box" id="chat-box">
             <ul id="chats-list" class="chats-list">

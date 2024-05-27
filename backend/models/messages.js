@@ -1,28 +1,27 @@
-const sequelize = require('../util/database')
+const sequelize = require('../utils/database')
 const { Sequelize, DataTypes } = require('sequelize')
 
 const Messages = sequelize.define('messages',{
     id:{
         primaryKey:true,
-        type: Sequelize.INTEGER,
-        allowNull:false,
-        autoIncrement: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
     },
     message:{
         type: Sequelize.STRING,
     },
     user1:{
-        type: Sequelize.INTEGER
+        type: DataTypes.UUID,
     },
     user2:{
-        type: Sequelize.INTEGER
+        type: DataTypes.UUID,
     },
     sender:{
-        type:Sequelize.INTEGER
+        type: DataTypes.UUID,
     },
     category:{
-        type: DataTypes.ENUM('user', 'group'),
-        defaultValue: 'user'
+        type: DataTypes.ENUM('USER', 'GROUP'),
+        defaultValue: 'USER'
     }
 })
 

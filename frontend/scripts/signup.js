@@ -4,62 +4,49 @@ let phone = document.getElementById('phone')
 let password = document.getElementById('password')
 
 let signup = document.getElementById('signup')
-
 signup.addEventListener('click', createUser)
 
 let URL = 'http://localhost:3000'
 
+
 async function createUser(e) {
-    console.log(true)
     e.preventDefault()
 
     let obj = {
-        name: name.value,
-        email: email.value,
-        phone: phone.value,
-        password: password.value
+        name: name.value.trim(),
+        email: email.value.trim(),
+        phone: phone.value.trim(),
+        password: password.value.trim()
     }
 
     if (!obj.name || !obj.email || !obj.phone || !obj.password) {
-        generalError()
+        displayError({ errorType: 'emptyFields', message: 'Please fill all fields' });
     }
     else {
-        let result = await axios.post(`${URL}/signup`, obj)
-        if (result.data.success == false) {
-            const { failed } = result.data
-            console.log(failed, 'failed')
-
-            for (let data of failed) {
-                specificError(data)
-            }
-        }
-        else {
-            console.log(result.data,'pass')
+        try {
+            const result = await axios.post(`${URL}/signup`, obj)
+            console.log(result.data, 'pass')
             window.location.href = './login.html'
+        } catch (error) {
+            const { errors } = error.response.data;
+                for (let data of errors) {
+                    displayError(data)
+                }
         }
     }
 }
 
 
-function specificError(data) {
+
+function displayError(error) {
+    if (error.errorType == 'serverError') error.errorType = 'password'      // show internal server error near password block
+    if (error.errorType == 'emptyFields') error.errorType = 'password'      // show emptyFields error near password block
+    let errorContainer = document.getElementById(`${error.errorType}-error`)
     let errorMessage = document.createElement('p')
-    errorMessage.innerHTML = data.message
+    errorMessage.innerHTML = error.message
     errorMessage.className = 'error-message'
-    let errorContainer = document.getElementById(`${data.error}-error`)
+
     errorContainer.appendChild(errorMessage)
-    setTimeout(() => {
-        errorMessage.remove()
-    }, 1000);
-}
-
-
-function generalError() {
-    let errorMessage = document.createElement('p')
-    errorMessage.innerHTML = 'Please fill all fields'
-    errorMessage.className = 'error-message'
-    let errorContainer = document.getElementById(`password-error`)
-    errorContainer.appendChild(errorMessage)
-
     setTimeout(() => {
         errorMessage.remove()
     }, 1000);

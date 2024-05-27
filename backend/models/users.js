@@ -1,14 +1,13 @@
-const sequelize = require('../util/database')
-const Sequelize = require('sequelize')
+const sequelize = require('../utils/database')
+const { Sequelize, DataTypes } = require('sequelize');
 
  
 
 const Users = sequelize.define('users',{
     id:{
-        autoIncrement:true,
         primaryKey:true,
-        type: Sequelize.INTEGER,
-        allowNull:false
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4, 
     },
     name:{
         type: Sequelize.STRING,
@@ -28,10 +27,6 @@ const Users = sequelize.define('users',{
         type: Sequelize.STRING,
         allowNull:false
     },
-    secretId:{
-        type: Sequelize.STRING,
-        allowNull: false
-    }
 })
 
 module.exports = Users

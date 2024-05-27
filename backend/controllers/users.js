@@ -1,6 +1,6 @@
-const Users = require('../models/usersModel')
-const ForgotPasswordRequest = require('../models/forgotPasswordRequests')
-const Sequelize = require('../util/database')
+const Users = require('../models/users')
+//const ForgotPasswordRequest = require('../models/forgot-password-request')
+const Sequelize = require('../utils/database')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { v4: uuidv4 } = require('uuid');
@@ -16,80 +16,73 @@ function generateToken(id, name) {
 exports.postSignup = async (req, res, next) => {
     const { name, email, phone, password } = req.body;
 
-    let failed = [];
+    let errors = [];
     const phoneExists = await Users.findAll({ where: { phone } });
     if (phoneExists.length) {
-        const err = { error: 'phone', message: 'Phone number already registered' }
-        failed.push(err)
+        const err = { errorType: 'phone', message: 'Phone number already registered' };
+        errors.push(err);
     }
     const emailExists = await Users.findAll({ where: { email } });
     if (emailExists.length) {
-        const err = { error: 'email', message: 'Email already registered' }
-        failed.push(err)
+        const err = { errorType: 'email', message: 'Email already registered' };
+        errors.push(err);
     }
     if (password.length < 8) {
-        failed.push({ error: 'password', message: 'Password length less than 8 characters' });
+        errors.push({ errorType: 'password', message: 'Password length less than 8 characters' });
     }
 
-    if (!failed.length) {
-        bcrypt.hash(password, 10, async (err, hash) => {
-            console.log(err, 'this is error');
+    if (!errors.length) {
+        try {
+            const hash = await bcrypt.hash(password, 10);
             const t = await Sequelize.transaction();
             try {
                 await Users.create({
                     name,
                     email,
                     phone,
-                    password: hash,
-                    secretId: uuidv4()
+                    password: hash
                 }, { transaction: t });
                 await t.commit();
                 res.status(201).json({ success: true });
             } catch (error) {
                 await t.rollback();
-                res.status(500).json({ success: false, message: 'Please try again' });
+                res.status(500).json({ success: false, errors: [{ errorType: 'serverError', message: 'Internal server error' }] });
             }
-        });
+        } catch (error) {
+            console.error('Error hashing password:', error);
+            res.status(500).json({ success: false, errors: [{ errorType: 'serverError', message: 'Internal server error' }] });
+        }
     } else {
-        res.status(200).json({ success: false, failed });
+        res.status(401).json({ success: false, errors });
     }
 }
+
 
 
 
 
 exports.postLogin = async (req, res, next) => {
     try {
-        let { email, password } = req.body
-        const result = await Users.findOne({ where: { email } })
-        console.log(result)
-        let failed = []
+        const { email, password } = req.body;
+        const user = await Users.findOne({ where: { email } });
 
-        if (!result) {
-            console.log('result block')
-            failed.push({ error: 'email', message: 'User not found' })
-            res.status(200).json({ success: false, failed })
+        // user doesn't exist
+        if (!user) {
+            return res.status(404).json({ success: false, errors: { errorType: 'email', message: 'User not found' } });
         }
-        else {
-            let fetchedPassword = result.dataValues.password
-            bcrypt.compare(password, fetchedPassword, async (err, bcryptResult) => {
-                if (err) {
-                    throw new Error({ error: 'bcryptError', message: 'Something went wrong' })
-                }
-                if (bcryptResult === false) {
-                    failed.push({ error: 'password', message: 'Password is wrong' })
-                    return res.status(200).json({ success: false, failed })
-                }
-                else {
-                    res.status(200).json({ success: true, token: generateToken(result.dataValues.id, result.dataValues.name), id: result.dataValues.id })
-                }
-            })
+
+        const bcryptResult = await bcrypt.compare(password, user.dataValues.password);
+        // wrong password
+        if (!bcryptResult) {
+            return res.status(401).json({ success: false, errors: { errorType: 'password', message: 'Password is wrong' } });
         }
+        // Successful login
+        return res.status(200).json({ success: true, token: generateToken(user.dataValues.id, user.dataValues.name), id: user.dataValues.id });
     } catch (error) {
-        console.log('error block')
-        return res.status(400).json(error)
+        console.error(error);
+        return res.status(500).json({ success: false, errors: { errorType: 'serverError', message: 'Internal server error' } });
     }
-}
+};
 
 
 
@@ -134,9 +127,3 @@ exports.postForgotPassword = async (req, res, next) => {
 
 }
 
-
-
-exports.getMyUser = async(req,res,next) =>{
-    console.log(req.user)
-    res.json(req.user.id)
-}
