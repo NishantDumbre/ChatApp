@@ -10,6 +10,10 @@ body {
     overflow-x: hidden;
 }
 
+p{
+    margin-bottom: 0px;
+}
+
 .left {
     background-color: rgb(67, 37, 52);
     flex-grow: 1;
@@ -51,23 +55,56 @@ body {
 .button {
     border: 1px blanchedalmond solid;
     border-radius: 10px;
-    width: 100px;
+    min-width: 100px;
+    max-width: 130px;
     height: 40px;
-    background-color: rgb(194, 71, 0);
     font-size: 17px;
     padding: 5px;
 }
 
-.button:hover {
-    box-shadow: 0 0 10px rgb(194, 71, 0);;
-    transition: background-color 0.8s ease;
+
+.btn-dark-orange {
+    background-color: rgb(194, 71, 0);
     color: rgb(239, 214, 172);
 }
+
+.btn-dark-orange:hover {
+    background-color: rgb(194, 71, 0);
+    color: rgb(67, 37, 52);
+    transition: background-color 0.8s ease;
+}
+
+
+.btn-dark-purple {
+    background-color: rgb(67, 37, 52);
+    color: rgb(239, 214, 172);
+}
+
+.btn-dark-purple:hover {
+    background-color: rgb(67, 37, 52);
+    color: rgb(194, 71, 0);
+    transition: background-color 0.8s ease;
+}
+
+
+.btn-del{
+    border: 1px blanchedalmond solid;
+    background-color: rgb(67, 37, 52);
+    color: rgb(239, 214, 172);
+    border-radius: 10px;
+    width: 60px;
+    height: 35px;
+    font-size: 15px;
+    padding: 5px;
+}
+
 
 .list-user,
 .list-group{
     display: flex;
     align-items: center;
+    flex-direction: row;
+    padding: 15px;
     margin: 10px;
     border: 1px black solid; 
     border-radius: 5px;
@@ -103,9 +140,7 @@ body {
 
 
 .title-container {
-    display: flex;
-    align-items: center;
-    padding: 10px;
+    padding: 20px;
     background-color: rgb(24, 58, 55);
 }
 
@@ -185,31 +220,6 @@ form {
 
 
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    /* Full height */
-    overflow: auto;
-    /* Enable scrolling if needed */
-    background-color: rgba(0, 0, 0, 0.6);
-    /* Black w/ opacity */
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    /* Could be more or less, depending on content */
-}
-
 .close {
     color: #aaa;
     float: right;
@@ -229,13 +239,42 @@ form {
     font-size: x-large;
 }
 
-.chat-user-message,
+
 .group-name,
 .user-name{
+    margin-left: 10px;
     color:rgb(239, 214, 172);
 }
+
+
+.chat-user-message{
+    color:rgb(239, 214, 172);
+    margin: 0px;
+}
+
 
 .chat-user-name{
     color: rgb(194, 71, 0);
     margin-bottom: 5px;
 }
+
+
+
+.new-group-list{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px rgb(77, 50, 50, 0.2) solid;
+    padding: 5px;
+    margin-bottom: 2px;
+}
+
+#search-members{
+    margin-left: 10px;
+    display: inline-block;
+}
+
+#group-name{
+    display: block;
+}
+

@@ -170,11 +170,11 @@ exports.leaveGroup = async (req, res, next) => {
         });
 
         const allAdmins = await UserGroup.findAll({
-            where:{role:'ADMIN'}
+            where: { role: 'ADMIN' }
         })
 
-        if(admin && allAdmins.length == 1){
-            
+        if (admin && allAdmins.length == 1) {
+
         }
 
         await UserGroup.destroy({
@@ -243,7 +243,7 @@ exports.deleteGroupMember = async (req, res, next) => {
 
 
 // Adds a member to an existing group
-exports.addGroupMember = async (req, res, next) => {
+exports.addMemberExistingGroup = async (req, res, next) => {
     const currentUserId = req.user.id;
     const { groupId, addUserId } = req.body;
     const t = await Sequelize.transaction()
@@ -264,6 +264,7 @@ exports.addGroupMember = async (req, res, next) => {
         res.status(200).json({ success: true });
     } catch (error) {
         await t.rollback()
+        console.log(error)
         res.status(400).json({ error: error.message });
     }
 };
@@ -274,7 +275,7 @@ exports.addGroupMember = async (req, res, next) => {
 // Adds a member to an existing group
 exports.makeUserAdmin = async (req, res, next) => {
     const currentUserId = req.user.id;
-    const { groupId, memberUserId } = req.body;
+    const { groupId, userGroupId } = req.body;
     const t = await Sequelize.transaction()
     try {
         const admin = await UserGroup.findOne({
@@ -285,14 +286,47 @@ exports.makeUserAdmin = async (req, res, next) => {
             throw new Error('User is not an admin');
         }
 
-        const group = await Groups.findOne({ where: { id: groupId } });
-
-        await group.addUser(addUserId, { through: { role: 'MEMBER' }, transaction: t });
+        await UserGroup.update(
+            { role: 'ADMIN' },
+            { where: { id: userGroupId } },
+            { transaction: t }
+        );
 
         await t.commit()
         res.status(200).json({ success: true });
     } catch (error) {
         await t.rollback()
+        console.log(error)
         res.status(400).json({ error: error.message });
     }
 };
+
+
+
+// Delete group and its messages
+
+exports.deleteGroup = async (req, res, next) => {
+    const currentUserId = req.user.id;
+    const { deleteGroupId } = req.body;
+    const t = await Sequelize.transaction()
+    try {
+        const admin = await UserGroup.findOne({
+            where: { userId: currentUserId, groupId: deleteGroupId }
+        });
+
+        if (!admin) {
+            throw new Error('User is not an admin');
+        }
+
+        await UserGroup.destroy({ where: { groupId: deleteGroupId }, transaction: t })
+        await Messages.destroy({ where: { groupId: deleteGroupId }, transaction: t })
+        await Groups.destroy({ where: { id: deleteGroupId }, transaction: t })
+
+        await t.commit()
+        res.status(200).json({ success: true })
+    } catch (error) {
+        await t.rollback()
+        console.log(error)
+        res.status(400).json({ error: error.message });
+    }
+}

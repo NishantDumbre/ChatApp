@@ -2,24 +2,30 @@
 let message = document.getElementById('message')
 let send = document.getElementById('send')
 let contactsContainer = document.getElementById('user-list')
-let addMembersList = document.getElementById('search-members')
+let addMembersListNewGroup = document.getElementById('missing-members-new-group')
 let createGroupUsers = document.getElementById('group-user-holder')
 let groupUserDetails = document.getElementById('group-user-details')
 let createGroupButton = document.getElementById('add-user')
 let groupUsersDetailsContainer = document.getElementById('group-user-details-container')
+let newGroup = document.getElementById('new-group')
+let closeCreateGroup = document.getElementById('close-create-group-modal')
+let closeCreateGroupX = document.getElementById('close-create-group-modal-X')
+let chatWindowNameBanner = document.getElementById('title-container')
+let userGroupDetailsModal = document.getElementById('group-user-details-modal');
+let closeGroupDetailsX = document.getElementById("close-group-details-modal-X");
+let closeGroupDetails = document.getElementById("close-group-details-modal");
 
 
 send.addEventListener('click', sendMessage)
 contactsContainer.addEventListener('click', openContactChat)
-addMembersList.addEventListener('change', addMember)
+addMembersListNewGroup.addEventListener('change', addMember);
 createGroupUsers.addEventListener('click', removeCreateGroupUsers)
 createGroupButton.addEventListener('click', createNewGroup)
-groupUserDetails.addEventListener('click', deleteGroupMember)
+groupUserDetails.addEventListener('click', deleteExistingGroupMember)
 window.addEventListener('DOMContentLoaded', generateLeftPanelContactList)
 
 
 const URL = 'http://localhost:3000'
-
 
 
 
@@ -43,14 +49,14 @@ async function generateLeftPanelContactList() {
 // DONE DONE DONE DONE
 // Selects a user or groups, id has the uuid stored for identification. Gets the actual ID's token of selectd user and saves it. Loads chat window and then all the chats. Appending the category in class on send button. Will be used to send message to either a group or a user
 async function openContactChat(e) {
-    if(e.target.tagName == 'UL')return
-    const mainElement = e.target.tagName === 'IMG' || e.target.tagName === 'H3' ? e.target.parentElement : e.target;
-    const name = mainElement.children[1].textContent
+    if (e.target.tagName == 'UL') return
+    const mainElement = e.target.tagName === 'H5' ? e.target.parentElement : e.target;
+    const name = mainElement.children[0].textContent
     const type = mainElement.classList.contains('list-user') ? 'user' : 'group'
     send.classList = type == 'user' ? 'button user' : 'button group'
     localStorage.setItem('receiver', mainElement.id)
-    chatWindowBanner.classList = type == 'user' ? 'title-container' : 'title-container group'
-    const token = localStorage.getItem('token')        
+    chatWindowNameBanner.classList = type == 'user' ? 'title-container' : 'title-container group'
+    const token = localStorage.getItem('token')
     await loadUserChatWindow(name)
     fetchContactChats(token, mainElement.id, type)
 }
@@ -61,7 +67,7 @@ async function openContactChat(e) {
 // Fetches all chats for A User. Then runs a function to manipulate DOM for each data element 
 async function fetchContactChats(token, receiver, type) {
     return new Promise(async (resolve, reject) => {
-        let result = await axios.post(`${URL}/get-${type}-messages`, {receiver}, { headers: { 'Authorization': token } })
+        let result = await axios.post(`${URL}/get-${type}-messages`, { receiver }, { headers: { 'Authorization': token } })
         for (let data of result.data.messages) {
             //createAndLoadMessages(data, result.data.loggedInUser.name)
             createAndLoadMessages(data.Sender, data.Receiver, result.data.loggedInUser, data.message)
@@ -82,7 +88,7 @@ function createAndLoadMessages(sender, receiver, loggedInUser, message) {
     }
     else {
         if (sender.name) {
-            let name = document.createElement('h4')
+            let name = document.createElement('h6')
             name.className = 'chat-user-name'
             name.innerHTML = sender.name
             li.appendChild(name)
@@ -110,8 +116,8 @@ async function loadUserChatWindow(name) {
         ul.id = 'chats-list'
         ul.className = 'chats-list'
         chatWindowDiv.appendChild(ul)
-        let titleContainer = document.getElementById('title-container')
-        titleContainer.children[1].innerHTML = `${name}`
+
+        chatWindowNameBanner.children[0].innerHTML = `${name}`
         resolve()
     })
 }
@@ -127,13 +133,7 @@ function createContactUI(contacts) {
     li.className = `list-${typeClass}`
     li.id = contacts.id
 
-    let img = document.createElement('img')
-    img.className = 'user-dp'
-    // img.alt = 'DP'
-    // img.src = './../img.png'
-    li.appendChild(img)
-
-    let name = document.createElement('h3')
+    let name = document.createElement('h5')
     name.innerHTML = `${contacts.name}`
     name.className = `${typeClass}-name`
     li.appendChild(name)
@@ -147,7 +147,7 @@ function createContactUI(contacts) {
 // Used to send message
 async function sendMessage(e) {
     e.preventDefault()
-    if(!message.value) return
+    if (!message.value) return
     const category = send.classList.contains('user') ? 'user' : 'group'
     const token = localStorage.getItem('token')
     const obj = {
@@ -170,14 +170,14 @@ async function getCreateGroupContacts() {
     let user = await axios.get(`${URL}/get-contacts`, { headers: { 'Authorization': token } })
     let { contacts } = user.data
 
-    while (addMembersList.options.length > 0) {
-        addMembersList.remove(0);
+    while (addMembersListNewGroup.options.length > 0) {
+        addMembersListNewGroup.remove(0);
     }
 
     let option = document.createElement('option')
     option.innerHTML = "Choose users"
     option.name = "Choose users"
-    addMembersList.appendChild(option)
+    addMembersListNewGroup.appendChild(option)
 
     for (let contact of contacts) {
         let option = document.createElement('option')
@@ -185,7 +185,8 @@ async function getCreateGroupContacts() {
         option.name = contact.name
         option.id = contact.id
         option.value = contact.name
-        addMembersList.appendChild(option)
+        addMembersListNewGroup.appendChild(option)
+        console.log(option)
     }
 }
 
@@ -194,25 +195,55 @@ async function getCreateGroupContacts() {
 
 //  DONE DONE DONE DONE
 // Used in Create Group functionality. Selects members to add in a group by adding them in a list of users to be added to the group
-function addMember(e) {
-    let selectedIndex = e.target.selectedIndex;     // gets the index of the selected option
-    let selectedOption = e.target.options[selectedIndex];      // gets the selected option
+function addMember(event) {
+    let selectedIndex = event.target.selectedIndex;     // gets the index of the selected option
+    let selectedOption = event.target.options[selectedIndex];      // gets the selected option
 
     let li = document.createElement('li')
     li.id = `${selectedOption.id}`
+    li.className = 'new-group-list'
 
     let button = document.createElement('button')
     button.innerHTML = 'delete'
-    button.className = 'delete'
+    button.className = 'delete btn-del'
     let p = document.createElement('p')
     p.innerHTML = selectedOption.value
 
     li.appendChild(p)
     li.appendChild(button)
     selectedOption.remove()     // removes the option from the select list since we are adding it to our selected users
+
     createGroupUsers.appendChild(li)
 }
 
+
+async function addMemberExistingGroup() {
+    const selectElement = document.getElementById('missing-users-from-group')
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+
+    const obj = {
+        groupId: localStorage.getItem('receiver'),   // receiver , group
+        addUserId: selectedOption.id
+    }
+    const token = localStorage.getItem('token')
+    const result = await axios.post(`${URL}/add-member-existing-group`, obj, { headers: { 'Authorization': token } })
+    console.log(true)
+
+    let li = document.createElement('li')
+    li.id = `${selectedOption.id}`
+    li.className = 'new-group-list'
+
+    let button = document.createElement('button')
+    button.innerHTML = 'delete'
+    button.className = 'delete btn-del'
+    let p = document.createElement('p')
+    p.innerHTML = selectedOption.value
+
+    li.appendChild(p)
+    li.appendChild(button)
+    selectedOption.remove()
+    groupUserDetails.appendChild(li)
+}
 
 
 //  DONE DONE DONE DONE
@@ -225,7 +256,7 @@ function removeCreateGroupUsers(e) {
         option.innerHTML = siblingEle.innerHTML
         option.name = parentEle.id
         option.id = parentEle.id
-        addMembersList.appendChild(option)
+        addMembersListNewGroup.appendChild(option)
         parentEle.remove()
     }
 }
@@ -250,32 +281,56 @@ async function createNewGroup(e) {
         let group = await axios.post(`${URL}/create-group/${groupName}`, arrUsers, { headers: { 'Authorization': token } })
         createContactUI(group.data, type = 'group')
     }
-
+    let modal = document.getElementById('exampleModal')
+    $(modal).modal('hide')
 }
 
 
 
 //  DONE DONE DONE DONE
 // On clicking group name in chat window, shows the list of members. The admin has the delete button available
-function loadGroupMembers(data, role) {
+function loadExistingGroupMembers(data, role) {
     console.log(data)
     let li = document.createElement('li')
     li.innerHTML = `${data.name}`
+    li.className = 'new-group-list'
+
     if (role == 'admin') {
         li.id = data.usergroup.id
-        let button = document.createElement('button')
-        button.innerHTML = 'delete'
-        button.className = 'delete'
-        li.appendChild(button)
+        let deleteButton = document.createElement('button')
+        deleteButton.innerHTML = 'delete'
+        deleteButton.className = 'delete btn-del'
+        li.appendChild(deleteButton)
+
+        if (data.usergroup.role == 'MEMBER') {
+            let makeAdminbutton = document.createElement('button')
+            makeAdminbutton.innerHTML = 'Make Admin'
+            makeAdminbutton.className = 'button'
+            makeAdminbutton.onclick = async function(){
+                await makeGroupAdmin(data.usergroup.id)
+                makeAdminbutton.remove()
+            }
+            li.appendChild(makeAdminbutton)
+        }
     }
     groupUserDetails.appendChild(li)
 }
 
 
+async function makeGroupAdmin(userGroupId){
+    const obj = {
+        userGroupId,
+        groupId: localStorage.getItem('receiver')
+    }
+    console.log(obj)
+    let token = localStorage.getItem('token')
+    let group = await axios.post(`${URL}/make-group-admin/`, obj, { headers: { 'Authorization': token } })
+    console.log(true)
+}
 
 
 //  DONE DONE DONE DONE
-async function deleteGroupMember(e) {
+async function deleteExistingGroupMember(e) {
     if (e.target.classList.contains('delete')) {
         let parentEle = e.target.parentElement
         console.log(parentEle)
@@ -289,7 +344,12 @@ async function deleteGroupMember(e) {
         if (result.data.success == true) {
             parentEle.remove()
         }
-        getGroupMembersForAdding()
+        let select = document.getElementById('missing-users-from-group')
+        select.remove()
+        let button = document.getElementById('addMemberExistingGroupButton')
+        button.remove()
+
+        getUsersToAddExistingGroup()
     }
 }
 
@@ -297,36 +357,71 @@ async function deleteGroupMember(e) {
 
 // DONE DONE DONE DONE
 // Shows members available to add in an existing group. Visible only to the admin
-async function getGroupMembersForAdding() {
+async function getUsersToAddExistingGroup() {
+    const groupNameContainer = document.getElementById('group-name-container')
+    const deleteGroupButton = document.createElement('button')
+    deleteGroupButton.className = 'button btn-dark-purple ml-5'
+    deleteGroupButton.innerHTML = 'Delete Group'
+    deleteGroupButton.id = 'delete-group-button'
+    deleteGroupButton.onclick = deleteGroup
+    groupNameContainer.appendChild(deleteGroupButton)
+
     const select = document.createElement('select')
-    select.id = 'missingUsersFromGroup'
-    
+    select.id = 'missing-users-from-group'
+
     const groupId = localStorage.getItem('receiver')
     const token = localStorage.getItem('token')
-    const members = await axios.get(`${URL}/get-group-members-to-add/${groupId}`, { headers: { 'Authorization': token } })    
-    for(let data of members.data.nonGroupMembers){
+    const members = await axios.get(`${URL}/get-group-members-to-add/${groupId}`, { headers: { 'Authorization': token } })
+    for (let data of members.data.nonGroupMembers) {
         let option = document.createElement('option')
         option.innerHTML = data.name
         option.id = data.Id
+        option.value = data.name
         select.appendChild(option)
     }
+
+    const add = document.createElement('button')
+    add.className = 'button btn-dark-orange mr-4'
+    add.innerHTML = 'Add member'
+    add.id = 'addMemberExistingGroupButton'
+    add.onclick = function () {
+        addMemberExistingGroup()
+    }
+    groupUsersDetailsContainer.appendChild(add)
     groupUsersDetailsContainer.appendChild(select)
+
+}
+
+
+
+async function deleteGroup() {
+    const confirmation = confirm(`Are you sure you want to delete the group?`);
+    if (!confirmation) {
+        alert('Submission canceled.');
+        return
+    }
+    const deleteGroupId = localStorage.getItem('receiver')
+    const token = localStorage.getItem('token')
+    const result = await axios.post(`${URL}/delete-group`, { deleteGroupId }, { headers: { 'Authorization': token } })
+    let modal = document.getElementById('group-user-details-modal')
+    $(modal).modal('hide')
+    clearGroupDetailsModal()
+    document.getElementById(deleteGroupId).remove()
 }
 
 
 
 
 // Opens group details on clicking group name in chat window
-var userGroupDetailsModal = document.getElementById('group-user-details-modal');
-var chatWindowBanner = document.getElementById("title-container");
-var groupSpan = document.getElementsByClassName("close")[1];
-
-chatWindowBanner.onclick = async function () {
-    if (!chatWindowBanner.classList.contains('group')) {
+chatWindowNameBanner.onclick = async function () {
+    if (!chatWindowNameBanner.classList.contains('group')) {
         return
     }
+    let modal = document.getElementById('group-user-details-modal')
+    $(modal).modal('show')
+
     const groupNameContainer = document.getElementById('group-name-container')
-    groupNameContainer.innerHTML = chatWindowBanner.children[1].textContent
+    groupNameContainer.innerHTML = chatWindowNameBanner.children[0].textContent
     const groupId = localStorage.getItem('receiver')
     const token = localStorage.getItem('token')
     const members = await axios.get(`${URL}/get-existing-group-members/${groupId}`, { headers: { 'Authorization': token } })
@@ -334,56 +429,62 @@ chatWindowBanner.onclick = async function () {
     let role = 'member'
     if (checkAdmin.data.success == true) {
         role = 'admin'
-        getGroupMembersForAdding()
+        getUsersToAddExistingGroup()
     }
     for (let data of members.data) {
-        loadGroupMembers(data, role)
+        console.log(data)
+        loadExistingGroupMembers(data, role)
     }
-    userGroupDetailsModal.style.display = "block";
 }
 
-groupSpan.onclick = function () {
-    userGroupDetailsModal.style.display = "none";
+function clearGroupDetailsModal() {
     while (groupUserDetails.firstChild) {
         groupUserDetails.removeChild(groupUserDetails.firstChild);
     }
-    document.getElementById('missingUsersFromGroup').remove()
-}
-
-window.onclick = function (event) {
-    if (event.target == userGroupDetailsModal) {
-        userGroupDetailsModal.style.display = "none";
-        while (groupUserDetails.firstChild) {
-            groupUserDetails.removeChild(groupUserDetails.firstChild);
-        }
-        document.getElementById('missingUsersFromGroup').remove()
+    while (document.getElementById('missing-users-from-group')) {
+        document.getElementById('missing-users-from-group').remove()
+    }
+    while (document.getElementById('addMemberExistingGroupButton')) {
+        document.getElementById('addMemberExistingGroupButton').remove()
     }
 }
 
+closeGroupDetailsX.onclick = function () {
+    clearGroupDetailsModal()
+}
+
+closeGroupDetails.onclick = function () {
+    clearGroupDetailsModal()
+}
 
 
 
 
-// Create group modal code
-var createGroupScreen = document.getElementById('new-group-modal');
-var createGroup = document.getElementById("new-group");
-var groupSpan = document.getElementsByClassName("close")[0];
-
-createGroup.onclick = function () {
-    createGroupScreen.style.display = "block";
+// Create Group modal
+newGroup.onclick = function () {
+    let modal = document.getElementById('create-group-modal')
+    $(modal).modal('show')
     getCreateGroupContacts()
 }
 
-groupSpan.onclick = function () {
-    createGroupScreen.style.display = "none";
+closeCreateGroup.onclick = function () {
+    while (createGroupUsers.firstChild) {
+        createGroupUsers.removeChild(createGroupUsers.firstChild);
+    }
+}
+
+closeCreateGroupX.onclick = function () {
     while (createGroupUsers.firstChild) {
         createGroupUsers.removeChild(createGroupUsers.firstChild);
     }
 }
 
 window.onclick = function (event) {
-    if (event.target == createGroupScreen) {
-        createGroupScreen.style.display = "none";
+    if (event.target == chatWindowNameBanner) {
+        clearGroupDetailsModal()
+    }
+
+    if (event.target == newGroup) {
         while (createGroupUsers.firstChild) {
             createGroupUsers.removeChild(createGroupUsers.firstChild);
         }

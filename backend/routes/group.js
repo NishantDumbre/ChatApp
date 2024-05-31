@@ -14,7 +14,10 @@ router.post('/delete-group-member/', authenticate, groupController.deleteGroupMe
 
 router.get('/get-group-members-to-add/:groupId', authenticate, groupController.getAddGroupMembers) 
 router.post('/create-group/:groupName', authenticate, groupController.createGroup)
+router.post('/delete-group/', authenticate, groupController.deleteGroup)
 
-router.post('/add-group-member', authenticate, groupController.addGroupMember)
+router.post('/add-member-existing-group', authenticate, groupController.addMemberExistingGroup)
+router.post('/make-group-admin', authenticate, groupController.makeUserAdmin)
+
 
 module.exports = router

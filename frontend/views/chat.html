@@ -5,34 +5,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Socket -->
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <!-- CSS -->
     <link rel="stylesheet" href="../styles//chat.css">
 </head>
 
 <body>
     <div class="left">
+        <!-- Create group modal code -->
         <div class="options-container">
-            <button type="click" id="new-group" class="button">New Group</button>
+            <!-- Create group modal trigger button -->
+            <button type="button" id="new-group" class="button btn-dark-orange" data-bs-toggle="modal"
+                data-bs-target="#create-group-modal">
+                New Group
+            </button>
         </div>
-        <div id="new-group-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div id="group-user-holder-container">
-                    <ul id="group-user-holder">
 
-                    </ul>
+        <!-- Bootstrap Modal -->
+        <div class="modal fade" id="create-group-modal" tabindex="-1" >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="create-group-modal-label">Create New Group</h5>
+                        <button type="button" id="close-create-group-modal-X" class="close btn-dark-purple"
+                            data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="group-user-holder-container">
+                            <ul id="group-user-holder">
+
+                            </ul>
+                        </div>
+                        <form action="" id="add-user-form">
+                            <input type="text" id="group-name" class="text-input" placeholder="Enter group name">
+                            <select name="missing-members-new-group" id="missing-members-new-group">
+
+                            </select>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="close-create-group-modal" class="btn btn-dark-purple"
+                            data-dismiss="modal">Close</button>
+                        <button type="button" id="add-user" class="button btn-dark-orange">Create Group</button>
+                    </div>
                 </div>
-                <form action="" id="add-user-form">
-                    <input type="text" id="group-name" class="text-input" placeholder="Enter group name">
-                    <select name="search-members" id="search-members">
-
-                    </select>
-                    <button type="click" id="add-user" class="button">Create Group</button>
-                </form>
             </div>
         </div>
 
+        <!-- Search filter code -->
         <div class="search-container">
             <input type="text" id="search-chats" class="text-input" placeholder="Search chats or groups">
         </div>
@@ -42,22 +68,33 @@
         </div>
     </div>
     <div class="right">
-        <div class="title-container" id="title-container">
-            <img src="../../img.png" alt="DP" class="user-dp">
-            <h3 class="user-name"></h3>
+        <div class="title-container" id="title-container" data-bs-toggle="modal" data-bs-target="#group-user-details-modal">
+            <h4 class="user-name"></h4>
         </div>
-        <div id="group-user-details-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div id="group-user-details-container">
-                    <h2>Group Name</h2><span id="group-name-container" class="group-name-container"></span>
-                    <span id="group-details-name"></span>
-                    <ul id="group-user-details">
 
-                    </ul>
+        <!-- Group details and edit modal -->
+        <div class="modal fade" id="group-user-details-modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 span id="group-name-container" class="group-name-container"></h5>
+                        <button type="button" id="close-group-details-modal-X" class="close btn-dark-purple"
+                            data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div id="group-user-details-container" class="modal-body">
+                        <ul id="group-user-details">
+                            
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="close-group-details-modal" class="btn btn-dark-orange" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="chat-box" id="chat-box">
             <ul id="chats-list" class="chats-list">
 
@@ -66,12 +103,20 @@
         <div class="message-box">
             <form action="">
                 <input type="text" id="message" class="message">
-                <button type="submit" id="send" class="button">Send</button>
+                <button type="submit" id="send" class="button btn-dark-orange">Send</button>
             </form>
         </div>
     </div>
-</body>
 
-<script src="../scripts//chat.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Popper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script src="../scripts//chat.js"></script>
+</body>
 
 </html>
