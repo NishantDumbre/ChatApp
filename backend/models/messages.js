@@ -10,13 +10,10 @@ const Messages = sequelize.define('messages',{
     message:{
         type: Sequelize.STRING,
     },
-    user1:{
-        type: DataTypes.UUID,
-    },
-    user2:{
-        type: DataTypes.UUID,
-    },
     sender:{
+        type: DataTypes.UUID,
+    },
+    receiver:{
         type: DataTypes.UUID,
     },
     category:{

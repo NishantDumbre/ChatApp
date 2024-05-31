@@ -63,9 +63,9 @@ User.hasMany(ForgotPasswordRequest, {
 });
 
 // Message -> User : one to one  (specified 2 foreign keys)
-Message.belongsTo(User, { foreignKey: 'user1', as: 'User1' });
-Message.belongsTo(User, { foreignKey: 'user2', as: 'User2' });
 Message.belongsTo(User, { foreignKey: 'sender', as: 'Sender' });
+Message.belongsTo(User, { foreignKey: 'receiver', as: 'Receiver' });
+
 
 // User -> Group : many to many
 Group.belongsToMany(User, { through: UserGroup });

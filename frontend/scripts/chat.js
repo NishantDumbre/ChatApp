@@ -1,7 +1,6 @@
 
 let message = document.getElementById('message')
 let send = document.getElementById('send')
-let newChat = document.getElementById('new-chat')
 let contactsContainer = document.getElementById('user-list')
 let addMembersList = document.getElementById('search-members')
 let createGroupUsers = document.getElementById('group-user-holder')
@@ -44,11 +43,12 @@ async function generateLeftPanelContactList() {
 // DONE DONE DONE DONE
 // Selects a user or groups, id has the uuid stored for identification. Gets the actual ID's token of selectd user and saves it. Loads chat window and then all the chats. Appending the category in class on send button. Will be used to send message to either a group or a user
 async function openContactChat(e) {
+    if(e.target.tagName == 'UL')return
     const mainElement = e.target.tagName === 'IMG' || e.target.tagName === 'H3' ? e.target.parentElement : e.target;
     const name = mainElement.children[1].textContent
     const type = mainElement.classList.contains('list-user') ? 'user' : 'group'
     send.classList = type == 'user' ? 'button user' : 'button group'
-    localStorage.setItem('receiver', JSON.stringify(mainElement.id))
+    localStorage.setItem('receiver', mainElement.id)
     chatWindowBanner.classList = type == 'user' ? 'title-container' : 'title-container group'
     const token = localStorage.getItem('token')        
     await loadUserChatWindow(name)
@@ -61,12 +61,10 @@ async function openContactChat(e) {
 // Fetches all chats for A User. Then runs a function to manipulate DOM for each data element 
 async function fetchContactChats(token, receiver, type) {
     return new Promise(async (resolve, reject) => {
-        console.log(receiver)
         let result = await axios.post(`${URL}/get-${type}-messages`, {receiver}, { headers: { 'Authorization': token } })
-        console.log(result.data)
         for (let data of result.data.messages) {
-            console.log(data)
-            createAndLoadMessages(data, result.data.loggedInUser.name)
+            //createAndLoadMessages(data, result.data.loggedInUser.name)
+            createAndLoadMessages(data.Sender, data.Receiver, result.data.loggedInUser, data.message)
         }
         resolve()
     })
@@ -74,24 +72,26 @@ async function fetchContactChats(token, receiver, type) {
 
 
 
-// NEED TO CHANGE! NEED TO CHANGE! NEED TO CHANGE! NEED TO CHANGE! NEED TO CHANGE!
+// DONE DONE DONE DONE
 // Creates the chat DOM for the chat data passed. This functionw will be passed to another function that fetches all chats. Used for both users and groups
-function createAndLoadMessages(data, loggedInUser) {
+function createAndLoadMessages(sender, receiver, loggedInUser, message) {
     let list = document.getElementById('chats-list')
     let li = document.createElement('li')
-    if (loggedInUser == data.sender) {
+    if (loggedInUser.id == sender.id) {
         li.className = 'my-chat chat-window'
     }
     else {
-        if (data.sender.name) {
+        if (sender.name) {
             let name = document.createElement('h4')
-            name.innerHTML = data.Sender.name
+            name.className = 'chat-user-name'
+            name.innerHTML = sender.name
             li.appendChild(name)
         }
         li.className = 'others-chat chat-window'
     }
     let p = document.createElement('p')
-    p.innerHTML = data.message
+    p.className = 'chat-user-message'
+    p.innerHTML = message
     li.appendChild(p)
     list.appendChild(li)
 }
@@ -147,6 +147,7 @@ function createContactUI(contacts) {
 // Used to send message
 async function sendMessage(e) {
     e.preventDefault()
+    if(!message.value) return
     const category = send.classList.contains('user') ? 'user' : 'group'
     const token = localStorage.getItem('token')
     const obj = {
@@ -155,11 +156,9 @@ async function sendMessage(e) {
         category
     }
     const result = await axios.post(`${URL}/send-${category}-message`, obj, { headers: { 'Authorization': token } })
-    const { myId } = result.data.details
-    const { sender } = result.data.details
-    const newObj = { myId, sender }
+    const { sender, receiver, loggedInUser } = result.data.details
     message.value = ''
-    createAndLoadMessages(newObj, myId)
+    createAndLoadMessages(sender, receiver, loggedInUser, obj.message)
 }
 
 
@@ -259,10 +258,11 @@ async function createNewGroup(e) {
 //  DONE DONE DONE DONE
 // On clicking group name in chat window, shows the list of members. The admin has the delete button available
 function loadGroupMembers(data, role) {
+    console.log(data)
     let li = document.createElement('li')
     li.innerHTML = `${data.name}`
     if (role == 'admin') {
-        li.id = data.id
+        li.id = data.usergroup.id
         let button = document.createElement('button')
         button.innerHTML = 'delete'
         button.className = 'delete'
@@ -278,20 +278,24 @@ function loadGroupMembers(data, role) {
 async function deleteGroupMember(e) {
     if (e.target.classList.contains('delete')) {
         let parentEle = e.target.parentElement
+        console.log(parentEle)
         const token = localStorage.getItem('token')
         const obj = {
             groupId: localStorage.getItem('receiver'),
             removeUserId: parentEle.id
         }
+        console.log(obj)
         const result = await axios.post(`${URL}/delete-group-member`, obj, { headers: { 'Authorization': token } })
         if (result.data.success == true) {
             parentEle.remove()
         }
+        getGroupMembersForAdding()
     }
 }
 
 
 
+// DONE DONE DONE DONE
 // Shows members available to add in an existing group. Visible only to the admin
 async function getGroupMembersForAdding() {
     const select = document.createElement('select')

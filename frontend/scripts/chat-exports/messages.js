@@ -7,7 +7,7 @@ send.addEventListener('click', sendMessage)
 
 
 // Used to send message
-export async function sendMessage(e) {
+async function sendMessage(e) {
     e.preventDefault()
     let category = send.classList.contains('user') ? 'user' : 'group'
 
@@ -28,3 +28,5 @@ export async function sendMessage(e) {
     console.log('now logging newobj')
     console.log(myId, newObj.sender)
 }
+
+

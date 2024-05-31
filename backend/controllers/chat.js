@@ -31,16 +31,20 @@ exports.postSendMessage = async (req, res, next) => {
     const t = await Sequelize.transaction();
     try {
         const { user } = req
-        const receiver = await Users.findByPk(req.body.receiver)
+        const { receiver, message } = req.body
+        const receiverDetails = await Users.findByPk(receiver)
 
-        const message = await Messages.create({
-            message: req.body.message,
-            user1: user.id,
-            user2: receiver.id,
+
+        await Messages.create({
+            message,
             sender: user.id,
+            receiver: receiverDetails.id
         }, { transaction: t })
-
-        const details = { myId: user.id, sender: user.id }
+        const details = {
+            sender: { id: user.id, name: user.name },
+            receiver: { id: receiverDetails.id, name: receiverDetails.name },
+            loggedInUser: { id: user.id, name: user.name }
+        }
         await t.commit()
         res.status(200).json({ success: true, details })
 
@@ -55,25 +59,24 @@ exports.postSendMessage = async (req, res, next) => {
 
 exports.getAllMessagesBetweenUsers = async (req, res, next) => {
     try {
-        const user1Id = req.user.id
-        const user2Id = req.body.receiver
-        console.log(req.body)
-        console.log(user2Id, user1Id)
+        const loggedInUser = req.user
+        const otherUserOrGroup = req.body.receiver
         const messages = await Messages.findAll({
             where: {
                 [Op.or]: [
-                    { user1: user1Id, user2: user2Id },
-                    { user1: user2Id, user2: user1Id }
+                    { sender: loggedInUser.id, receiver: otherUserOrGroup },
+                    { sender: otherUserOrGroup, receiver: loggedInUser.id }
                 ]
             },
             include: [
-                { model: Users, as: 'User1' },
-                { model: Users, as: 'User2' }
+                { model: Users, as: 'Sender', attributes: ['id', 'name'] },
+                { model: Users, as: 'Receiver', attributes: ['id', 'name'] }
             ],
-            order: [['createdAt', 'ASC']]
+            order: [['createdAt', 'ASC']],
+            attributes: ['message']
         });
-
-        res.status(200).json(messages);
+        console.log(messages)
+        res.status(200).json({messages, loggedInUser:{id: loggedInUser.id}});
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });

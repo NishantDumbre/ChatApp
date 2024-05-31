@@ -14,7 +14,8 @@ function createUser() {
     window.location.href = '../views/signup.html'
 }
 
-
+const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
 async function loginUser(e) {
     e.preventDefault()
 
@@ -49,7 +50,7 @@ function displayError(error) {
     let errorMessage = document.createElement('p')
     errorMessage.innerHTML = error.message
     errorMessage.className = 'error-message'
-
+    if(errorContainer.children[0]) errorContainer.children[0].remove()
     errorContainer.appendChild(errorMessage)
     setTimeout(() => {
         errorMessage.remove()

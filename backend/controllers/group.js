@@ -4,17 +4,16 @@ const Messages = require('../models/messages')
 const Groups = require('../models/groups')
 const UserGroup = require('../models/user-groups');
 
-
 const { Op } = require('sequelize');
 
 
 
-
+// Creates a group. The one who creates the group is ADMIN by default
 exports.createGroup = async (req, res, next) => {
     const t = await Sequelize.transaction();
 
     try {
-        const {groupName} = req.params
+        const { groupName } = req.params
         const admin = []
         const members = []
 
@@ -26,7 +25,7 @@ exports.createGroup = async (req, res, next) => {
         const currentUser = await Users.findOne({ where: { id: req.user.id } });
         let { id, email, name } = currentUser.dataValues
         admin.push({ id, email, name })
-        await group.addUser(currentUser, { through: { role: 'admin' }, transaction: t });
+        await group.addUser(currentUser, { through: { role: 'ADMIN' }, transaction: t });
 
         for (let data of req.body) {
             let user = await Users.findOne({ where: { id: data } })
@@ -41,67 +40,77 @@ exports.createGroup = async (req, res, next) => {
         await t.rollback()
         console.log(error)
     }
-
-
 }
 
 
 
-
-
-exports.postSendMessage = async (req, res, next) => {
+// Sends message in a group
+exports.sendMessage = async (req, res, next) => {
     const t = await Sequelize.transaction();
     try {
-        const { message, category, receiver } = req.body
+        const { receiver, message } = req.body
         const { user } = req
+        const receiverDetails = await Groups.findByPk(receiver)
 
-        const sendMessage = await Messages.create({
+        await Messages.create({
             message,
-            user1: user.id,
-            groupId: receiver.id,
             sender: user.id,
-            category
+            groupId: receiverDetails.id,
+            category: 'GROUP'
         }, { transaction: t })
-        const details = { myId: user.id, sender: user.id }
+        const details = {
+            sender: { id: user.id, name: user.name },
+            receiver: { id: receiverDetails.id },
+            loggedInUser: { id: user.id, name: user.name }
+        }
         await t.commit()
         res.status(201).json({ success: true, details })
     } catch (error) {
         await t.rollback
+        console.log(error)
         res.status(400).json(error)
     }
 }
 
 
 
-
+// Gets all group messages
 exports.getGroupMessages = async (req, res, next) => {
     const groupId = req.body.receiver
     const loggedInUser = req.user
     try {
-        const messages = await Messages.findAll({
+        const allMessages = await Messages.findAll({
             where: { groupId }, // Assuming groupId is defined elsewhere
             order: [['createdAt', 'ASC']],
             include: [
                 {
                     model: Users,
                     as: 'Sender', // Alias for the included Users model
-                    attributes: ['name'] // Retrieve only the 'name' attribute from the Users table
+                    attributes: ['id', 'name'] // Retrieve only the 'name' attribute from the Users table
                 }
             ],
-            attributes: ['message', 'createdAt', 'sender']
+            attributes: ['message', 'createdAt', 'groupId']
         });
-        res.status(200).json(messages, loggedInUser.name)
+        //console.log(allMessages[0].dataValues)
+        const messages = allMessages.map(message => ({
+            Sender: { id: message.Sender.dataValues.id, name: message.Sender.dataValues.name },
+            Receiver: { id: message.groupId, id: message.name },
+            message: message.message,
+        }));
+
+        res.status(200).json({ messages, loggedInUser: { id: loggedInUser.id } })
     } catch (error) {
+        console.log(error)
         res.status(400).json(error)
     }
 }
 
 
 
-
-exports.getGroupMembers = async (req, res, next) => {
+// Gets the existing members of a group
+exports.getExistingGroupMembers = async (req, res, next) => {
     const { groupId } = req.params
-    
+
     try {
         const group = await Groups.findOne({
             where: { id: groupId }
@@ -122,66 +131,11 @@ exports.getGroupMembers = async (req, res, next) => {
 }
 
 
-exports.checkGroupAdmin = async (req, res, next) => {
-    const currentUserId = req.user.id;
-    const { groupId } = req.params
-    
-    try {
-        const admin = await UserGroup.findOne({
-            where: { userId: currentUserId, groupId:groupId }
-        });
 
-        if (admin.dataValues.role == 'member') {
-            throw new Error('User is not an admin');
-        }
-        
-        res.status(200).json({success:true, message:'User is an admin'})
-
-    } catch (error) {
-        res.status(400).json({success:false, error})
-    }
-}
-
-
-
-
-exports.deleteGroupMember = async (req, res, next) => {
-    const groupId = req.body.groupId;
-    const currentUserId = req.user.id;
-    const { removeUserId } = req.body; 
-    const t = await Sequelize.transaction()
-    try {
-        const admin = await UserGroup.findOne({
-            where: { userId: currentUserId, groupId }
-        });
-
-        if (!admin) {
-            throw new Error('User is not an admin');
-        }
-        const userToDelete = await Users.findOne({
-            where: { Id: removeUserId }
-        });
-
-        if (!userToDelete) {
-            throw new Error('User not found');
-        }
-        await UserGroup.destroy({
-            where: { userId: userToDelete.id, groupId }
-        }, {transaction:t});
-
-        await t.commit()
-        res.status(200).json({success:true});
-    } catch (error) {
-        await t.rollback()
-        res.status(400).json({ error: error.message });
-    }
-};
-
-
-
+// fetches the users that are not present in the group
 exports.getAddGroupMembers = async (req, res, next) => {
     const { groupId } = req.params
-    
+
     try {
         const groupUserIds = await UserGroup.findAll({
             where: { groupId },
@@ -192,13 +146,153 @@ exports.getAddGroupMembers = async (req, res, next) => {
 
         const nonGroupMembers = await Users.findAll({
             where: {
-                id: { [Op.notIn]: ids } 
+                id: { [Op.notIn]: ids }
             },
-            attributes:['name', 'Id']
+            attributes: ['name', 'Id']
         });
-        res.status(200).json({success:true, nonGroupMembers})
+        res.status(200).json({ success: true, nonGroupMembers })
 
     } catch (error) {
-        res.status(400).json({success:false, error})
+        res.status(400).json({ success: false, error })
     }
 }
+
+
+
+// Leaves the group
+exports.leaveGroup = async (req, res, next) => {
+    const currentUserId = req.user.id;
+    const { groupId } = req.body;
+    const t = await Sequelize.transaction()
+    try {
+        const admin = await UserGroup.findOne({
+            where: { userId: currentUserId, groupId }
+        });
+
+        const allAdmins = await UserGroup.findAll({
+            where:{role:'ADMIN'}
+        })
+
+        if(admin && allAdmins.length == 1){
+            
+        }
+
+        await UserGroup.destroy({
+            where: { userId: currentUserId }
+        }, { transaction: t });
+
+        await t.commit()
+        res.status(200).json({ success: true });
+    } catch (error) {
+        await t.rollback()
+        res.status(400).json({ error: error.message });
+    }
+};
+
+
+
+// Checks if a user is admin of te group or not
+exports.checkGroupAdmin = async (req, res, next) => {
+    const currentUserId = req.user.id;
+    const { groupId } = req.params
+
+    try {
+        const admin = await UserGroup.findOne({
+            where: { userId: currentUserId, groupId: groupId }
+        });
+
+        if (admin.dataValues.role == 'member') {
+            throw new Error('User is not an admin');
+        }
+
+        res.status(200).json({ success: true, message: 'User is an admin' })
+
+    } catch (error) {
+        res.status(400).json({ success: false, error })
+    }
+}
+
+
+
+// Deletes a member from an existing group
+exports.deleteGroupMember = async (req, res, next) => {
+    const currentUserId = req.user.id;
+    const { groupId, removeUserId } = req.body;
+    const t = await Sequelize.transaction()
+    try {
+        const admin = await UserGroup.findOne({
+            where: { userId: currentUserId, groupId }
+        });
+
+        if (!admin) {
+            throw new Error('User is not an admin');
+        }
+
+        await UserGroup.destroy({
+            where: { id: removeUserId }
+        }, { transaction: t });
+
+        await t.commit()
+        res.status(200).json({ success: true });
+    } catch (error) {
+        await t.rollback()
+        res.status(400).json({ error: error.message });
+    }
+};
+
+
+
+// Adds a member to an existing group
+exports.addGroupMember = async (req, res, next) => {
+    const currentUserId = req.user.id;
+    const { groupId, addUserId } = req.body;
+    const t = await Sequelize.transaction()
+    try {
+        const admin = await UserGroup.findOne({
+            where: { userId: currentUserId, groupId }
+        });
+
+        if (!admin) {
+            throw new Error('User is not an admin');
+        }
+
+        const group = await Groups.findOne({ where: { id: groupId } });
+
+        await group.addUser(addUserId, { through: { role: 'MEMBER' }, transaction: t });
+
+        await t.commit()
+        res.status(200).json({ success: true });
+    } catch (error) {
+        await t.rollback()
+        res.status(400).json({ error: error.message });
+    }
+};
+
+
+
+// NEEDS TO CHANGE!!!!!!
+// Adds a member to an existing group
+exports.makeUserAdmin = async (req, res, next) => {
+    const currentUserId = req.user.id;
+    const { groupId, memberUserId } = req.body;
+    const t = await Sequelize.transaction()
+    try {
+        const admin = await UserGroup.findOne({
+            where: { userId: currentUserId, groupId }
+        });
+
+        if (!admin) {
+            throw new Error('User is not an admin');
+        }
+
+        const group = await Groups.findOne({ where: { id: groupId } });
+
+        await group.addUser(addUserId, { through: { role: 'MEMBER' }, transaction: t });
+
+        await t.commit()
+        res.status(200).json({ success: true });
+    } catch (error) {
+        await t.rollback()
+        res.status(400).json({ error: error.message });
+    }
+};

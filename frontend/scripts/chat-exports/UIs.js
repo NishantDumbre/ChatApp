@@ -45,7 +45,7 @@ export async function loadUserChatWindow(name) {
 
 
 // Creates the chat DOM for the chat data passed. This functionw will be passed to another function that fetches all chats. Used for both users and groups
-export function createAndLoadMessages(data, myId) {
+function createAndLoadMessagesUI(data, myId) {
     let list = document.getElementById('chats-list')
     let li = document.createElement('li')
     if (myId == data.sender) {
@@ -85,3 +85,5 @@ export function loadGroupMembersUI(data, role) {
     }
     groupUserDetails.appendChild(li)
 }
+
+

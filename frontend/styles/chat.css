@@ -11,7 +11,7 @@ body {
 }
 
 .left {
-    background-color: rgb(255, 126, 126);
+    background-color: rgb(67, 37, 52);
     flex-grow: 1;
 }
 
@@ -25,7 +25,7 @@ body {
 
 .options-container {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: flex-end;
     padding: 20px;
 }
 
@@ -53,29 +53,30 @@ body {
     border-radius: 10px;
     width: 100px;
     height: 40px;
-    background: linear-gradient(to bottom, #92df8b, #feb47b);
+    background-color: rgb(194, 71, 0);
     font-size: 17px;
     padding: 5px;
 }
 
 .button:hover {
-    background: linear-gradient(to bottom, #ffc400, #feb47b);
-    color: rgb(75, 49, 0);
+    box-shadow: 0 0 10px rgb(194, 71, 0);;
+    transition: background-color 0.8s ease;
+    color: rgb(239, 214, 172);
 }
 
 .list-user,
 .list-group{
     display: flex;
     align-items: center;
-    margin: 30px;
+    margin: 10px;
     border: 1px black solid; 
     border-radius: 5px;
-    background-color: rgb(255, 176, 176);;
+    background-color: rgb(24, 58, 55);
 }
 
 .list-user:hover,
 .list-group:hover{
-    background-color: antiquewhite;
+    box-shadow: 0 0 10px rgb(4, 21, 31);;
     transition: background-color 0.8s ease;
 }
 
@@ -96,7 +97,6 @@ body {
 .group-list {
     overflow-y: auto;
     max-height: calc(100vh - 160px);
-    background: linear-gradient(to top, #92df8b, #feb47b);
     padding: 10px;
     margin-top: 20px;
 }
@@ -105,13 +105,12 @@ body {
 .title-container {
     display: flex;
     align-items: center;
-    border: 1px black solid;
-    background: linear-gradient(to right, #92df8b, #feb47b);
     padding: 10px;
-    transition: background-color 0.8s ease;
+    background-color: rgb(24, 58, 55);
 }
 
 .title-container:active{
+    transition: background-color 0.8s ease;
     background-color: red;
 }
 
@@ -125,6 +124,7 @@ body {
 }
 
 .message-box {
+    background-color: rgb(24, 58, 55);
     padding: 20px;
     display: flex;
     max-height: 200px; 
@@ -157,14 +157,13 @@ form {
 
 
 .chat-window {
-    background: linear-gradient(to bottom, #ffc400, #c08557);
+    background-color: rgb(67, 37, 52);
     margin: 10px;
-    margin-left: 20px;
     list-style: none;
     width: fit-content;
     max-width: 40%;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 5px;
 }
 
 
@@ -183,7 +182,6 @@ form {
     white-space: normal; /* Allow normal line wrapping */
     overflow-wrap: break-word; /* Allow word break for long words */
 }
-
 
 
 
@@ -229,4 +227,15 @@ form {
 
 .group-name-container{
     font-size: x-large;
+}
+
+.chat-user-message,
+.group-name,
+.user-name{
+    color:rgb(239, 214, 172);
+}
+
+.chat-user-name{
+    color: rgb(194, 71, 0);
+    margin-bottom: 5px;
 }
