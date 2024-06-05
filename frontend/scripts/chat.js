@@ -15,7 +15,9 @@ let chatWindowNameBanner = document.getElementById('title-container')
 let userGroupDetailsModal = document.getElementById('group-user-details-modal');
 let closeGroupDetailsX = document.getElementById("close-group-details-modal-X");
 let closeGroupDetails = document.getElementById("close-group-details-modal");
-
+let chatWindowDiv = document.getElementById('chat-box')
+let chatsList = document.getElementById('chats-list')
+let spinner = document.getElementById('loading-spinner')
 
 send.addEventListener('click', sendMessage)
 upload.addEventListener('click', uploadFile)
@@ -24,11 +26,12 @@ addMembersListNewGroup.addEventListener('change', addMember);
 createGroupUsers.addEventListener('click', removeCreateGroupUsers)
 createGroupButton.addEventListener('click', createNewGroup)
 groupUserDetails.addEventListener('click', deleteExistingGroupMember)
+chatWindowDiv.addEventListener('scroll', checkChatBoxScroll);
 window.addEventListener('DOMContentLoaded', generateLeftPanelContactList)
 
 
 const URL = 'http://localhost:3000'
-
+let currentPage = 0
 const socket = io(URL);
 
 socket.on('connect', () => {
@@ -38,27 +41,51 @@ socket.on('connect', () => {
 socket.on('newMessage', (lastMessageId) => {
     console.log('Recevied new message')
     fetchLastMessage(lastMessageId);
+    while(contactsContainer.children[0]){
+        contactsContainer.children[0].remove()
+    }
+    generateLeftPanelContactList()
 })
 
 
-// DONE DONE DONE
+
+
+async function checkChatBoxScroll(){
+    if (chatWindowDiv.scrollTop === 0) {
+        console.log(spinner.style.display)
+        spinner.style.display = 'block'
+        console.log(spinner)
+        console.log(spinner.style.display)
+        console.log(true)
+        const token = localStorage.getItem('token');
+        const receiver = localStorage.getItem('receiver');
+        const type = chatWindowNameBanner.classList.contains('group') ? 'group' : 'user';
+        currentPage++
+        console.log(currentPage)
+        
+        await fetchContactChats(token, receiver, type, currentPage);
+    }
+}
+
+
+
 // Fetches the number of registered users and groups from DB. Then a function called createContactUI is passed that generates the list of contacts in left band
 async function generateLeftPanelContactList() {
     let token = localStorage.getItem('token')
     let userAndGroups = await axios.get(`${URL}/get-contacts`, { headers: { 'Authorization': token } })
+    console.log(true)
+    document.getElementById('welcome-name').textContent = `Welcome ${userAndGroups.data.loggedInUserName}!`
+
     let { contacts } = userAndGroups.data
-    let { groups } = userAndGroups.data
-    for (let group of groups) {
-        createContactUI(group, type = 'group')
-    }
     for (let contact of contacts) {
+        console.log(contact)
         createContactUI(contact, type = 'user')
     }
 }
 
 
 
-// DONE DONE DONE DONE
+
 // Selects a user or groups, id has the uuid stored for identification. Gets the actual ID's token of selectd user and saves it. Loads chat window and then all the chats. Appending the category in class on send button. Will be used to send message to either a group or a user
 async function openContactChat(e) {
     if (e.target.tagName == 'UL') return
@@ -73,7 +100,7 @@ async function openContactChat(e) {
     chatWindowNameBanner.classList = type == 'user' ? 'title-container' : 'title-container group'
     const token = localStorage.getItem('token')
     await loadUserChatWindow(name)
-    fetchContactChats(token, mainElement.id, type)
+    fetchContactChats(token, mainElement.id, type, currentPage)
 }
 
 
@@ -81,42 +108,37 @@ async function openContactChat(e) {
 async function fetchLastMessage(lastMessageId) {
     const token = localStorage.getItem('token')
     let result = await axios.get(`${URL}/get-last-message/${lastMessageId}`, { headers: { 'Authorization': token } })
-    console.log(result.data)
     const { message, loggedInUser } = result.data
-    console.log('$$$$$$$$$$$$$$$$$$$$$$$$$')
-    console.log(message.Sender)
-    console.log( message.Receiver)
-    console.log(loggedInUser.id)
-    console.log(message.message)
-    createAndLoadMessages(message.Sender, message.Receiver, loggedInUser, message.message)
     
+    createAndLoadMessages(message.Sender, message.Receiver, loggedInUser, message.message, type = 'last')
 }
 
 
 
-// DONE DONE DONE DONE
+
 // Fetches all chats for A User. Then runs a function to manipulate DOM for each data element 
-async function fetchContactChats(token, receiver, type) {
+async function fetchContactChats(token, receiver, type, currentPage) {
     return new Promise(async (resolve, reject) => {
-        let result = await axios.post(`${URL}/get-${type}-messages`, { receiver }, { headers: { 'Authorization': token } })
-        for (let data of result.data.messages) {
-            createAndLoadMessages(data.Sender, data.Receiver, result.data.loggedInUser, data.message)
-            console.log(data.Sender, data.Receiver, result.data.loggedInUser, data.message)
+        console.log(currentPage)
+        const obj = {
+            receiver, 
+            currentPage
         }
+        let result = await axios.post(`${URL}/get-${type}-messages`, obj , { headers: { 'Authorization': token } })
+        for (let data of result.data.messages) {
+            console.log(data.message)
+            createAndLoadMessages(data.Sender, data.Receiver, result.data.loggedInUser, data.message, type='all')
+        }
+        spinner.style.display = 'none'
         resolve()
     })
 }
 
 
 
-// DONE DONE DONE DONE
+
 // Creates the chat DOM for the chat data passed. This functionw will be passed to another function that fetches all chats. Used for both users and groups
-function createAndLoadMessages(sender, receiver, loggedInUser, message) {
-    console.log('>>>>>>>>>>>>>>>>')
-    console.log(sender)
-    console.log(receiver)
-    console.log(loggedInUser)
-    console.log(message)
+function createAndLoadMessages(sender, receiver, loggedInUser, message, type) {
     let list = document.getElementById('chats-list')
     let li = document.createElement('li')
     if (loggedInUser.id == sender.id) {
@@ -135,16 +157,19 @@ function createAndLoadMessages(sender, receiver, loggedInUser, message) {
     p.className = 'chat-user-message'
     p.innerHTML = message
     li.appendChild(p)
-    list.appendChild(li)
+    if(list.firstChild && type == 'all'){
+        list.insertBefore(li, list.firstChild);
+    } else{
+        list.appendChild(li)
+    }
+    
 }
 
 
 
-// DONE DONE DONE DONE DONE
 // Removes existing chat window and loads the chat window of selected user or groups. Returns a promise
 async function loadUserChatWindow(name) {
     return new Promise((resolve, reject) => {
-        let chatWindowDiv = document.getElementById('chat-box')
         if (chatWindowDiv.children[0]) {
             chatWindowDiv.removeChild(chatWindowDiv.children[0])
         }
@@ -154,13 +179,14 @@ async function loadUserChatWindow(name) {
         chatWindowDiv.appendChild(ul)
 
         chatWindowNameBanner.children[0].innerHTML = `${name}`
+        currentPage = 0
         resolve()
     })
 }
 
 
 
-// DONE DONE DONE DONE
+
 // Creates the contact person UI and appends it to the left band contact list container. Used for both users and groups
 function createContactUI(contacts) {
 
@@ -508,7 +534,7 @@ async function deleteExistingGroupMember(e) {
 
 
 
-// DONE DONE DONE DONE
+
 // Shows members available to add in an existing group. Visible only to the admin
 async function getUsersToAddExistingGroup() {
     const groupNameContainer = document.getElementById('group-name-container')

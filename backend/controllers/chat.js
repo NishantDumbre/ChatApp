@@ -10,19 +10,84 @@ const { Op } = require('sequelize');
 
 
 exports.getContacts = async (req, res, next) => {
-    let loggedinUser = req.user
     try {
-        const user = await Users.findByPk(req.user.id)
-        const groups = await user.getGroups()
+        const loggedInUserId = req.user.id;
+        const loggedInUserName = req.user.name.split(" ")[0]
+        // Get all groups associated with the logged-in user along with their latest message
+        const groups = await Groups.findAll({
+            attributes: ['name', 'id'],
+            include: [
+                {
+                    model: Messages,
+                    where: {
+                        category: 'GROUP'
+                    },
+                    order: [['createdAt', 'DESC']],
+                    limit: 1 // Get only the latest message
+                }
+            ]
+        });
+
+        // Get all contacts excluding the logged-in user along with their latest message
         const contacts = await Users.findAll({
-            where: { id: { [Op.not]: loggedinUser.id } }, attributes: ['name', 'email', 'id']
-        })
-        res.status(200).json({ succees: true, contacts, groups })
+            where: {
+                id: {
+                    [Op.not]: loggedInUserId
+                }
+            },
+            attributes: ['name', 'id'],
+            include: [
+                {
+                    model: Messages,
+                    as: 'SentMessages', // Alias for sender messages
+                    where: {
+                        receiver: loggedInUserId,
+                        category: 'USER'
+                    },
+                    attributes: ['createdAt'],
+                    order: [['createdAt', 'DESC']],
+                    limit: 1 // Get only the latest message
+                },
+                {
+                    model: Messages,
+                    as: 'ReceivedMessages', 
+                    where: {
+                        sender: loggedInUserId,
+                        category: 'USER'
+                    },
+                    attributes: ['createdAt'],
+                    order: [['createdAt', 'DESC']],
+                    limit: 1 // Get only the latest message
+                }
+            ]
+        });
+
+        const allContacts = groups.concat(contacts);
+
+        allContacts.sort((a, b) => {
+            const getLastMessageTime = contact => {
+                const latestMessage = contact.Messages?.[0] || 
+                    contact.SentMessages?.[0] ||
+                    contact.ReceivedMessages?.[0];
+                return latestMessage ? new Date(latestMessage.createdAt) : new Date(0);
+            };
+        
+            const lastMessageTimeA = getLastMessageTime(a);
+            const lastMessageTimeB = getLastMessageTime(b);
+        
+            // Compare the timestamps of the last messages
+            return lastMessageTimeB - lastMessageTimeA;
+        });
+
+        
+        res.status(200).json({ success: true, contacts: allContacts, loggedInUserName });
     } catch (error) {
-        console.log(error)
-        res.status(400).json({ success: false, message: 'Error fetching users' })
+        console.log(error);
+        res.status(400).json({ success: false, message: 'Error fetching contacts and groups' });
     }
-}
+};
+
+
 
 
 
@@ -61,20 +126,24 @@ exports.postSendMessage = async (req, res, next) => {
 exports.getAllMessagesBetweenUsers = async (req, res, next) => {
     try {
         const loggedInUser = req.user
-        const otherUserOrGroup = req.body.receiver
+        const {currentPage, receiver} = req.body
+        console.log(req.body, '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        const messageLimit = 8
         const messages = await Messages.findAll({
             where: {
                 [Op.or]: [
-                    { sender: loggedInUser.id, receiver: otherUserOrGroup },
-                    { sender: otherUserOrGroup, receiver: loggedInUser.id }
+                    { sender: loggedInUser.id, receiver: receiver },
+                    { sender: receiver, receiver: loggedInUser.id }
                 ]
             },
             include: [
                 { model: Users, as: 'Sender', attributes: ['id', 'name'] },
                 { model: Users, as: 'Receiver', attributes: ['id', 'name'] }
             ],
-            order: [['createdAt', 'ASC']],
-            attributes: ['message']
+            order: [['createdAt', 'DESC']],
+            attributes: ['message'],
+            offset: Number(currentPage) * messageLimit,
+            limit: messageLimit
         });
         res.status(200).json({ messages, loggedInUser: { id: loggedInUser.id } });
     } catch (error) {

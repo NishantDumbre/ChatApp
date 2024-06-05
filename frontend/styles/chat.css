@@ -29,7 +29,8 @@ p{
 
 .options-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     padding: 20px;
 }
 
@@ -287,4 +288,17 @@ form {
 
 .fa-upload:active {
     color: rgb(239, 214, 172);
+}
+
+
+.spinner-border{
+    position: relative;
+    top: -50%;
+    left: 50%;
+    display: none;
+}
+
+.welcome-name{
+    color: rgb(239, 214, 172);
+    font-size: 25px;
 }

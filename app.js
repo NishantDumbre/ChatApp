@@ -48,8 +48,7 @@ const io = new Server(server, {
 
 //* socket.io connections
 io.on('connect', (socket) => {
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    console.log(socket.id)
+    
     socket.on('newMessage', (lastMessageId) => {
       io.emit('newMessage', lastMessageId);
     });
@@ -76,9 +75,14 @@ User.hasMany(ForgotPasswordRequest, {
     onDelete: 'CASCADE' 
 });
 
+
 // Message -> User : one to one  (specified 2 foreign keys)
 Message.belongsTo(User, { foreignKey: 'sender', as: 'Sender' });
 Message.belongsTo(User, { foreignKey: 'receiver', as: 'Receiver' });
+
+// User -> Message : one to many
+User.hasMany(Message, { foreignKey: 'sender', as: 'SentMessages' }); // Messages sent by the user
+User.hasMany(Message, { foreignKey: 'receiver', as: 'ReceivedMessages' }); // Messages received by the user
 
 
 // User -> Group : many to many

@@ -13,13 +13,16 @@
     <!-- CSS -->
     <link rel="stylesheet" href="../styles//chat.css">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
     <div class="left">
         <!-- Create group modal code -->
         <div class="options-container">
+            <p id="welcome-name" class="welcome-name"></p>
             <!-- Create group modal trigger button -->
             <button type="button" id="new-group" class="button btn-dark-orange" data-bs-toggle="modal"
                 data-bs-target="#create-group-modal">
@@ -28,7 +31,7 @@
         </div>
 
         <!-- Bootstrap Modal -->
-        <div class="modal fade" id="create-group-modal" tabindex="-1" >
+        <div class="modal fade" id="create-group-modal" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -70,7 +73,8 @@
         </div>
     </div>
     <div class="right">
-        <div class="title-container" id="title-container" data-bs-toggle="modal" data-bs-target="#group-user-details-modal">
+        <div class="title-container" id="title-container" data-bs-toggle="modal"
+            data-bs-target="#group-user-details-modal">
             <h4 class="user-name"></h4>
         </div>
 
@@ -87,17 +91,21 @@
                     </div>
                     <div id="group-user-details-container" class="modal-body">
                         <ul id="group-user-details">
-                            
+
                         </ul>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" id="close-group-details-modal" class="btn btn-dark-orange" data-dismiss="modal">Close</button>
+                        <button type="button" id="close-group-details-modal" class="btn btn-dark-orange"
+                            data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="chat-box" id="chat-box">
+            <div class="spinner-border" role="status" id="loading-spinner">
+                <span class="visually-hidden"></span>
+            </div>
             <ul id="chats-list" class="chats-list">
 
             </ul>
@@ -105,7 +113,7 @@
         <div id="uploaded-files"></div>
         <div class="message-box" id="message-box">
             <form action="">
-                
+
                 <i class="fa-solid fa-upload" id="upload"></i>
                 <input type="text" id="message" class="message">
                 <button type="submit" id="send" class="button btn-dark-orange">Send</button>
