@@ -87,12 +87,11 @@ p{
 }
 
 
-.btn-del{
+.btn-small{
     border: 1px blanchedalmond solid;
-    background-color: rgb(67, 37, 52);
-    color: rgb(239, 214, 172);
     border-radius: 10px;
-    width: 60px;
+    min-width: 60px;
+    max-width: 100px;
     height: 35px;
     font-size: 15px;
     padding: 5px;
@@ -142,6 +141,7 @@ p{
 .title-container {
     padding: 20px;
     background-color: rgb(24, 58, 55);
+    display: none;
 }
 
 .title-container:active{
@@ -159,9 +159,9 @@ p{
 }
 
 .message-box {
+    display: none;
     background-color: rgb(24, 58, 55);
     padding: 20px;
-    display: flex;
     max-height: 200px; 
 }
 
@@ -278,3 +278,13 @@ form {
     display: block;
 }
 
+
+.fa-upload{
+    color: rgb(194, 71, 0);
+    font-size:30px;
+    margin-right: 30px;
+}
+
+.fa-upload:active {
+    color: rgb(239, 214, 172);
+}

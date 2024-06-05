@@ -35,7 +35,7 @@ exports.postSendMessage = async (req, res, next) => {
         const receiverDetails = await Users.findByPk(receiver)
 
 
-        await Messages.create({
+        const newMessage = await Messages.create({
             message,
             sender: user.id,
             receiver: receiverDetails.id
@@ -43,7 +43,8 @@ exports.postSendMessage = async (req, res, next) => {
         const details = {
             sender: { id: user.id, name: user.name },
             receiver: { id: receiverDetails.id, name: receiverDetails.name },
-            loggedInUser: { id: user.id, name: user.name }
+            loggedInUser: { id: user.id, name: user.name },
+            messageDetails: { id: newMessage.id }
         }
         await t.commit()
         res.status(200).json({ success: true, details })
@@ -75,8 +76,43 @@ exports.getAllMessagesBetweenUsers = async (req, res, next) => {
             order: [['createdAt', 'ASC']],
             attributes: ['message']
         });
-        console.log(messages)
-        res.status(200).json({messages, loggedInUser:{id: loggedInUser.id}});
+        res.status(200).json({ messages, loggedInUser: { id: loggedInUser.id } });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
+exports.getLastMessageBetweenUsers = async (req, res, next) => {
+    try {
+        const loggedInUser = req.user
+        const { lastMessageId } = req.params
+        
+        const message = await Messages.findByPk(lastMessageId, {
+            include: [
+                { model: Users, as: 'Sender', attributes: ['id', 'name'] },
+                { model: Users, as: 'Receiver', attributes: ['id', 'name'] }
+            ], attributes: ['message', 'createdAt', 'groupId']
+        });
+
+        res.status(200).json({ message, loggedInUser: { id: loggedInUser.id } });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
+exports.getBucketInfo = async (req, res, next) => {
+    try {
+        const loggedInUser = req.user
+
+        const data = getS3Bucket()
+
+        res.status(200).json(data);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });

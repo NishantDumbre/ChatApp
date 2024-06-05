@@ -4,7 +4,7 @@ const Messages = require('../models/messages')
 const Groups = require('../models/groups')
 const UserGroup = require('../models/user-groups');
 
-const { Op } = require('sequelize');
+const { Op, QueryTypes } = require('sequelize');
 
 
 
@@ -52,7 +52,7 @@ exports.sendMessage = async (req, res, next) => {
         const { user } = req
         const receiverDetails = await Groups.findByPk(receiver)
 
-        await Messages.create({
+        const newMessage = await Messages.create({
             message,
             sender: user.id,
             groupId: receiverDetails.id,
@@ -61,7 +61,8 @@ exports.sendMessage = async (req, res, next) => {
         const details = {
             sender: { id: user.id, name: user.name },
             receiver: { id: receiverDetails.id },
-            loggedInUser: { id: user.id, name: user.name }
+            loggedInUser: { id: user.id, name: user.name },
+            messageDetails: { id: newMessage.id }
         }
         await t.commit()
         res.status(201).json({ success: true, details })
@@ -91,7 +92,7 @@ exports.getGroupMessages = async (req, res, next) => {
             ],
             attributes: ['message', 'createdAt', 'groupId']
         });
-        //console.log(allMessages[0].dataValues)
+        
         const messages = allMessages.map(message => ({
             Sender: { id: message.Sender.dataValues.id, name: message.Sender.dataValues.name },
             Receiver: { id: message.groupId, id: message.name },
@@ -104,6 +105,8 @@ exports.getGroupMessages = async (req, res, next) => {
         res.status(400).json(error)
     }
 }
+
+
 
 
 
@@ -165,26 +168,47 @@ exports.leaveGroup = async (req, res, next) => {
     const { groupId } = req.body;
     const t = await Sequelize.transaction()
     try {
-        const admin = await UserGroup.findOne({
+        const isAdmin = await UserGroup.findOne({
             where: { userId: currentUserId, groupId }
         });
 
-        const allAdmins = await UserGroup.findAll({
-            where: { role: 'ADMIN' }
-        })
+        let nextAdmin = null
+        if (isAdmin.role == 'ADMIN') {
+            const allAdmins = await UserGroup.findAll({
+                where: { role: 'ADMIN', groupId }
+            })
+            if (isAdmin && allAdmins.length == 1) {
+                const randomValue = await Sequelize.query(
+                    'SELECT id FROM usergroups WHERE groupId = :groupId ORDER BY RAND() LIMIT 1;',
+                    {
+                        replacements: { groupId },
+                        type: QueryTypes.SELECT,
+                    }
+                );
 
-        if (admin && allAdmins.length == 1) {
+                await UserGroup.update(
+                    { role: 'ADMIN' },
+                    { where: { id: randomValue[0].id } },
+                    { transaction: t }
+                );
 
+                const newAdmin = await UserGroup.findOne({
+                    where: { id: randomValue[0].id }
+                });
+
+                nextAdmin = newAdmin.id
+            }
         }
 
         await UserGroup.destroy({
-            where: { userId: currentUserId }
+            where: { userId: currentUserId, groupId }
         }, { transaction: t });
 
         await t.commit()
-        res.status(200).json({ success: true });
+        res.status(200).json({ success: true, nextAdmin });
     } catch (error) {
         await t.rollback()
+        console.log(error)
         res.status(400).json({ error: error.message });
     }
 };
@@ -201,14 +225,14 @@ exports.checkGroupAdmin = async (req, res, next) => {
             where: { userId: currentUserId, groupId: groupId }
         });
 
-        if (admin.dataValues.role == 'member') {
+        if (admin.dataValues.role == 'MEMBER') {
             throw new Error('User is not an admin');
         }
 
         res.status(200).json({ success: true, message: 'User is an admin' })
 
     } catch (error) {
-        res.status(400).json({ success: false, error })
+        res.status(400).json({ success: false, error: error.message })
     }
 }
 
@@ -271,7 +295,6 @@ exports.addMemberExistingGroup = async (req, res, next) => {
 
 
 
-// NEEDS TO CHANGE!!!!!!
 // Adds a member to an existing group
 exports.makeUserAdmin = async (req, res, next) => {
     const currentUserId = req.user.id;

@@ -14,8 +14,8 @@ const morgan = require('morgan');
 
 
 // Importing socket.io
-const http = require('http');
-const socketIo = require('socket.io');
+const {createServer} = require('http')
+const {Server} = require('socket.io')
 
 
 // Utils
@@ -35,16 +35,30 @@ const groupRoutes = require('./backend/routes/group');
 
 
 
+// Setting up server
 const app = express();
+app.use(cors());
+const server = createServer(app);
+const io = new Server(server, {
+    cors:{
+        origin: "*"
+    }
+})
+
+
+//* socket.io connections
+io.on('connect', (socket) => {
+    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+    console.log(socket.id)
+    socket.on('newMessage', (lastMessageId) => {
+      io.emit('newMessage', lastMessageId);
+    });
+  })
 
 
 // Middlewares
 app.use(helmet());
 app.use(compression());
-app.use(cors({
-    origin: 'http://127.0.0.1:5500',
-    methods: ['GET', 'POST']
-}));
 app.use(bodyParser.json({ extended: false }));
 
 
@@ -81,6 +95,6 @@ Message.belongsTo(Group)
 // Sync and start the server
 sequelize.sync()
     .then(() => {
-        app.listen(3000)
+        server.listen(3000)
     })
     .catch((err) => console.log(err));
