@@ -700,5 +700,3 @@ window.onclick = function (event) {
 }
 
 
-
-

@@ -10,12 +10,12 @@ require('dotenv').config();
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
-const morgan = require('morgan');
+//const morgan = require('morgan');
 
 
 // Importing socket.io
-const {createServer} = require('http')
-const {Server} = require('socket.io')
+const { createServer } = require('http')
+const { Server } = require('socket.io')
 
 
 // Utils
@@ -40,7 +40,7 @@ const app = express();
 app.use(cors());
 const server = createServer(app);
 const io = new Server(server, {
-    cors:{
+    cors: {
         origin: "*"
     }
 })
@@ -48,11 +48,11 @@ const io = new Server(server, {
 
 //* socket.io connections
 io.on('connect', (socket) => {
-    
+
     socket.on('newMessage', (lastMessageId) => {
-      io.emit('newMessage', lastMessageId);
+        io.emit('newMessage', lastMessageId);
     });
-  })
+})
 
 
 // Middlewares
@@ -71,8 +71,8 @@ app.use(groupRoutes);
 
 // User -> ForgotPasswordRequest : one to many
 User.hasMany(ForgotPasswordRequest, {
-    foreignKey: 'userId', 
-    onDelete: 'CASCADE' 
+    foreignKey: 'userId',
+    onDelete: 'CASCADE'
 });
 
 
@@ -102,3 +102,30 @@ sequelize.sync()
         server.listen(3000)
     })
     .catch((err) => console.log(err));
+
+
+
+
+
+
+console.log("Start");
+
+setImmediate(() => {
+    console.log("Inside setImmediate callback 1");
+
+    process.nextTick(() => {
+        console.log("Inside setImmediate callback 1, process.nextTick");
+    });
+});
+
+console.log("Middle");
+
+process.nextTick(() => {
+    console.log("Inside process.nextTick callback 1");
+
+    setImmediate(() => {
+        console.log("Inside process.nextTick callback 1, setImmediate");
+    });
+});
+
+console.log("End");

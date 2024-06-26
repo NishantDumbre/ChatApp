@@ -15,3 +15,6 @@ const PasswordRequest = sequelize.define('passwordRequest',{
 })
 
 module.exports = PasswordRequest
+
+
+//pascal case for modals
