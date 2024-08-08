@@ -37,7 +37,11 @@ const groupRoutes = require('./backend/routes/group');
 
 // Setting up server
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  }));
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
@@ -55,7 +59,13 @@ io.on('connect', (socket) => {
 
 
 // Middlewares
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        'script-src': ["'self'", 'https://cdn.jsdelivr.net/npm/axios/dist/'],
+      }
+    }
+  }));
 app.use(compression());
 app.use(bodyParser.json({ extended: false }));
 
