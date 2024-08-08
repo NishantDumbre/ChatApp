@@ -61,6 +61,8 @@ app.use(compression());
 app.use(bodyParser.json({ extended: false }));
 
 
+app.use(express.static(__dirname + "/frontend"))
+
 // Routes
 app.use(homepageRoutes);
 app.use(userRoutes);
@@ -102,30 +104,3 @@ sequelize.sync()
         server.listen(3000)
     })
     .catch((err) => console.log(err));
-
-
-
-
-
-
-console.log("Start");
-
-setImmediate(() => {
-    console.log("Inside setImmediate callback 1");
-
-    process.nextTick(() => {
-        console.log("Inside setImmediate callback 1, process.nextTick");
-    });
-});
-
-console.log("Middle");
-
-process.nextTick(() => {
-    console.log("Inside process.nextTick callback 1");
-
-    setImmediate(() => {
-        console.log("Inside process.nextTick callback 1, setImmediate");
-    });
-});
-
-console.log("End");
