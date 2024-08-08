@@ -30,7 +30,7 @@ chatWindowDiv.addEventListener('scroll', checkChatBoxScroll);
 window.addEventListener('DOMContentLoaded', generateLeftPanelContactList)
 
 
-const URL = 'http://localhost:3000'
+const URL = 'https://chatapp-rdnh.onrender.com'
 let currentPage = 0
 const socket = io(URL);
 

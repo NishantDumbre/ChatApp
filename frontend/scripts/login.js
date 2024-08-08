@@ -7,7 +7,7 @@ let password = document.getElementById('password')
 login.addEventListener('click', loginUser)
 signup.addEventListener('click', createUser)
 
-let URL = 'http://localhost:3000'
+let URL = 'https://chatapp-rdnh.onrender.com'
 
 
 function createUser() {

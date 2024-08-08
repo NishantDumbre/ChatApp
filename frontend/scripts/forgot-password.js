@@ -3,7 +3,7 @@ let email = document.getElementById('email')
 
 reset.addEventListener('click', sendResetURL)
 
-let URL = 'http://localhost:3000'
+let URL = 'https://chatapp-rdnh.onrender.com'
 
 
 
