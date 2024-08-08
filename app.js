@@ -48,7 +48,6 @@ const io = new Server(server, {
 
 //* socket.io connections
 io.on('connect', (socket) => {
-
     socket.on('newMessage', (lastMessageId) => {
         io.emit('newMessage', lastMessageId);
     });
